@@ -1,7 +1,15 @@
+
+extern crate gpx;
 use std::default::Default;
+use std::io::BufReader;
+use std::fs::File;
+
 use haversine_rs::point::Point;
 use haversine_rs::units::Unit;
 use haversine_rs::distance_vec;
+
+use gpx::read;
+use gpx::{Gpx, Track, TrackSegment, Waypoint};
 
 /// Calculates the distance between multiple points.
 /// Returns result in Meter.
@@ -43,7 +51,10 @@ where
 {
     pub fn execute(&mut self) {
         println!("Common preamble");
+        let mut trkseg: TrackSegment = TrackSegment::new();
+
         self.strategy.execute();
+
         println!("Common postamble");
         println!("Limit: {}", self.strategy.max_limit());
         self.output_count = 1;
