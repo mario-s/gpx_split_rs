@@ -1,6 +1,5 @@
 
 extern crate gpx;
-use std::default::Default;
 use std::io::BufReader;
 use std::fs::File;
 
@@ -28,24 +27,12 @@ fn test_distance_vec() {
 
 /// -------------------------------------------------
 
-pub struct Context<S> {
+pub struct Context<'a, S> {
+    pub file: &'a str,
     pub strategy: S,
-    output_count: u32
 }
 
-impl<S> Default for Context<S>
-where
-    S: Default + Splitter,
-{
-    fn default() -> Self {
-        Context {
-            strategy: Default::default(),
-            output_count: 1,
-        }
-    }
-}
-
-impl<S> Context<S>
+impl<S> Context<'_, S>
 where
     S: Splitter,
 {
@@ -57,7 +44,6 @@ where
 
         println!("Common postamble");
         println!("Limit: {}", self.strategy.max_limit());
-        self.output_count = 1;
     }
 }
 
@@ -72,7 +58,6 @@ pub trait Splitter {
 
 /// strategy to split based on the number of points
 ///
-#[derive(Default)]
 pub struct PointsSplitter {
     max_limit: u32,
 }
@@ -97,7 +82,6 @@ impl Splitter for PointsSplitter {
 
 /// strategy to split based on the lenth of a segment
 ///
-#[derive(Default)]
 pub struct LengthSplitter {
     max_limit: u32,
 }
