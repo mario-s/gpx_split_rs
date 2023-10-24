@@ -36,9 +36,33 @@ impl<S> Context<'_, S>
 where
     S: Splitter,
 {
+    fn read_tracks(&self) -> Vec<Track> {
+        let file = File::open(self.file).unwrap();
+        let reader = BufReader::new(file);
+
+        //gives a Result<Gpx, Error>
+        let gpx: Gpx = read(reader).unwrap();
+
+        return gpx.tracks;
+    }
+
     pub fn execute(&mut self) {
         println!("Common preamble");
-        let mut trkseg: TrackSegment = TrackSegment::new();
+        let tracks = self.read_tracks();
+        let mut track_segment: TrackSegment = TrackSegment::new();
+
+        for track in tracks {
+            let segments = track.segments;
+            for segment in segments {
+                let points = segment.points;
+                for point in points {
+                    track_segment.points.push(point);
+
+                    //TODO: if a limit for the track segment is exceeded, we write current segment to a file and create a new one
+
+                }
+            }
+        }
 
         self.strategy.execute();
 
