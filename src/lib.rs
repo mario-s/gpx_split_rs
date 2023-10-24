@@ -1,4 +1,3 @@
-
 extern crate gpx;
 use std::io::BufReader;
 use std::fs::File;
@@ -8,7 +7,7 @@ use haversine_rs::units::Unit;
 use haversine_rs::distance_vec;
 
 use gpx::read;
-use gpx::{Gpx, Track, TrackSegment, Waypoint};
+use gpx::{Gpx, Track, TrackSegment};
 
 /// Calculates the distance between multiple points.
 /// Returns result in Meter.

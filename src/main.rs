@@ -1,10 +1,10 @@
 //import
-mod split;
+extern crate gpx_split;
 
 //bring into scope
-use split::Context;
-use split::LengthSplitter;
-use split::PointsSplitter;
+use gpx_split::Context;
+use gpx_split::LengthSplitter;
+
 
 fn main() {
     /// PointsSplitter::new(50)
