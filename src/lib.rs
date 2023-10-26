@@ -28,7 +28,7 @@ fn test_distance() {
 /// Calculates the distance of all points in the track.
 /// Returns result in Meter.
 ///
-fn distance_track(track_segment: &TrackSegment) -> f64 {
+fn distance_track(track_segment: TrackSegment) -> f64 {
     let points = track_segment.points.iter().map(|p| p.point()).map(|p| Point::new(p.x(), p.y())).collect();
     return distance(points);
 }
@@ -61,20 +61,19 @@ where
         let mut track_segment: TrackSegment = TrackSegment::new();
 
         for track in tracks {
-            let segments = track.segments;
-            for segment in segments {
-                let points = segment.points;
-                for point in points {
-                    track_segment.points.push(point);
+            track.segments.iter()
+            .flat_map(|segment| segment.points.iter().cloned())
+            .for_each(|point| {
+                track_segment.points.push(point);
 
-                    if self.strategy.exceeds_limit(&track_segment) {
+                    if self.strategy.exceeds_limit(track_segment.to_owned()) {
                         //TODO: if a limit for the track segment is exceeded, we write current segment to a file and create a new one
                         println!("Splitting {} with {:?}", counter, self.strategy);
                         counter += 1;
                     }
-                }
-            }
+            });
         }
+
 
         println!("Common postamble");
     }
@@ -83,7 +82,7 @@ where
 /// -------------------------------------------------
 
 pub trait Splitter {
-    fn exceeds_limit(&self, track_segment: &TrackSegment) -> bool;
+    fn exceeds_limit(&self, track_segment: TrackSegment) -> bool;
 }
 
 /// -------------------------------------------------
@@ -103,7 +102,7 @@ impl PointsSplitter {
 
 impl Splitter for PointsSplitter {
 
-    fn exceeds_limit(&self, track_segment: &TrackSegment) -> bool {
+    fn exceeds_limit(&self, track_segment: TrackSegment) -> bool {
         track_segment.points.len() > self.max_limit.try_into().unwrap()
     }
 }
@@ -124,7 +123,7 @@ impl LengthSplitter {
 }
 
 impl Splitter for LengthSplitter {
-    fn exceeds_limit(&self, track_segment: &TrackSegment) -> bool {
+    fn exceeds_limit(&self, track_segment: TrackSegment) -> bool {
         distance_track(track_segment) > self.max_limit
     }
 }
