@@ -57,24 +57,21 @@ where
                 for point in points {
                     track_segment.points.push(point);
 
-                    //TODO: if a limit for the track segment is exceeded, we write current segment to a file and create a new one
-
+                    if self.strategy.exceeds_limit(&track_segment) {
+                        //TODO: if a limit for the track segment is exceeded, we write current segment to a file and create a new one
+                    }
                 }
             }
         }
 
-        self.strategy.execute();
-
         println!("Common postamble");
-        println!("Limit: {}", self.strategy.max_limit());
     }
 }
 
 /// -------------------------------------------------
 
 pub trait Splitter {
-    fn execute(&self);
-    fn max_limit(&self) -> u32;
+    fn exceeds_limit(&self, track_segment: &TrackSegment) -> bool;
 }
 
 /// -------------------------------------------------
@@ -92,12 +89,9 @@ impl PointsSplitter {
 }
 
 impl Splitter for PointsSplitter {
-    fn execute(&self) {
-        println!("PointsSplitter")
-    }
 
-    fn max_limit(&self) -> u32 {
-        self.max_limit
+    fn exceeds_limit(&self, track_segment: &TrackSegment) -> bool {
+        false
     }
 }
 
@@ -117,11 +111,7 @@ impl LengthSplitter {
 
 impl Splitter for LengthSplitter {
 
-    fn execute(&self) {
-        println!("LengthSplitter")
-    }
-
-    fn max_limit(&self) -> u32 {
-        self.max_limit
+    fn exceeds_limit(&self, track_segment: &TrackSegment) -> bool {
+        false
     }
 }
