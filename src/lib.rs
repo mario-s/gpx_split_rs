@@ -1,4 +1,5 @@
 extern crate gpx;
+use std::fmt::Debug;
 use std::io::BufReader;
 use std::fs::File;
 
@@ -17,11 +18,19 @@ fn distance(points: Vec<Point>) -> f64 {
 }
 
 #[test]
-fn test_distance_vec() {
+fn test_distance() {
     let point_0 = Point::new(40.7767644, -73.9761399);
     let point_1 = Point::new(40.771209, -73.9673991);
     let distance = distance(vec![point_0, point_1]);
     assert!(distance == 960.9072987659282);
+}
+
+/// Calculates the distance of all points in the track.
+/// Returns result in Meter.
+///
+fn distance_track(track_segment: &TrackSegment) -> f64 {
+    let points = track_segment.points.iter().map(|p| p.point()).map(|p| Point::new(p.x(), p.y())).collect();
+    return distance(points);
 }
 
 /// -------------------------------------------------
@@ -33,7 +42,7 @@ pub struct Context<'a, S> {
 
 impl<S> Context<'_, S>
 where
-    S: Splitter,
+    S: Splitter + Debug,
 {
     fn read_tracks(&self) -> Vec<Track> {
         let file = File::open(self.file).unwrap();
@@ -47,6 +56,7 @@ where
 
     pub fn execute(&mut self) {
         println!("Common preamble");
+        let mut counter: u32 = 1;
         let tracks = self.read_tracks();
         let mut track_segment: TrackSegment = TrackSegment::new();
 
@@ -59,7 +69,8 @@ where
 
                     if self.strategy.exceeds_limit(&track_segment) {
                         //TODO: if a limit for the track segment is exceeded, we write current segment to a file and create a new one
-                        println!("Splitting!");
+                        println!("Splitting {} with {:?}", counter, self.strategy);
+                        counter += 1;
                     }
                 }
             }
@@ -79,6 +90,7 @@ pub trait Splitter {
 
 /// strategy to split based on the number of points
 ///
+#[derive(Debug)]
 pub struct PointsSplitter {
     max_limit: u32,
 }
@@ -100,19 +112,19 @@ impl Splitter for PointsSplitter {
 
 /// strategy to split based on the lenth of a segment
 ///
+#[derive(Debug)]
 pub struct LengthSplitter {
-    max_limit: u32,
+    max_limit: f64,
 }
 
 impl LengthSplitter {
-    pub fn new(max_limit: u32) -> Self {
+    pub fn new(max_limit: f64) -> Self {
         LengthSplitter { max_limit }
     }
 }
 
 impl Splitter for LengthSplitter {
-
     fn exceeds_limit(&self, track_segment: &TrackSegment) -> bool {
-        false
+        distance_track(track_segment) > self.max_limit
     }
 }
