@@ -59,6 +59,7 @@ where
 
                     if self.strategy.exceeds_limit(&track_segment) {
                         //TODO: if a limit for the track segment is exceeded, we write current segment to a file and create a new one
+                        println!("Splitting!");
                     }
                 }
             }
@@ -91,7 +92,7 @@ impl PointsSplitter {
 impl Splitter for PointsSplitter {
 
     fn exceeds_limit(&self, track_segment: &TrackSegment) -> bool {
-        false
+        track_segment.points.len() > self.max_limit.try_into().unwrap()
     }
 }
 
