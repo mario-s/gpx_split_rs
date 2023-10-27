@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use std::io::{BufReader, Error, ErrorKind};
 use std::fs::File;
 
+use gpx::errors::GpxError;
 use haversine_rs::point::Point;
 use haversine_rs::units::Unit;
 use haversine_rs::distance_vec;
@@ -34,6 +35,11 @@ fn distance_track(track_segment: TrackSegment) -> f64 {
     return distance(points);
 }
 
+/// Function to convert an GpxError
+fn to_error(gpx_err: GpxError) -> Error {
+    Error::new(ErrorKind::Other, gpx_err.to_string())
+}
+
 /// -------------------------------------------------
 
 pub struct Context<'a, S> {
@@ -48,10 +54,11 @@ where
     pub fn execute(&mut self) {
         println!("Common preamble");
         let mut counter: u32 = 1;
-        let tracks = self.read_tracks();
+        let gpx = self.read_gpx().unwrap();
+
         let mut track_segment: TrackSegment = TrackSegment::new();
 
-        for track in tracks {
+        for track in gpx.tracks {
             track.segments.iter()
             .flat_map(|segment| segment.points.iter().cloned())
             .for_each(|point| {
@@ -66,42 +73,46 @@ where
                     }
             });
         }
-
+        //TODO write remaining
 
         println!("Common postamble");
     }
 
-    fn read_tracks(&self) -> Vec<Track> {
-        let file = File::open(self.file).unwrap();
+    fn read_gpx(&self) -> Result<Gpx, Error> {
+        let file = File::open(self.file)?;
         let reader = BufReader::new(file);
 
-        //gives a Result<Gpx, Error>
-        let gpx: Gpx = read(reader).unwrap();
-        return gpx.tracks;
+        match read(reader) {
+            Ok(gpx) => Ok(gpx),
+            Err(gpx_err) => Err(to_error(gpx_err))
+        }
     }
 
     fn write_gpx(&self, src_track: &Track, segment: &TrackSegment, counter: u32) -> Result<(), Error> {
+        let mut gpx : Gpx = Default::default();
+        gpx.version = GpxVersion::Gpx11;
+
+        let mut track: Track = src_track.clone();
+        track.segments.clear();
+        track.segments.push(segment.to_owned());
+        gpx.tracks.push(track);
+
+        let path = self.create_path(counter)?;
+        let file = File::create(path)?;
+        let res = write(&gpx, file);
+        match res {
+            Ok(_) => Ok(()),
+            Err(gpx_err) => Err(to_error(gpx_err))
+        }
+    }
+
+    fn create_path(&self, counter: u32) -> Result<String, Error> {
         let parts: Vec<&str> = self.file.rsplitn(2, '.').collect();
         if parts.len() != 2 {
             return Err(Error::new(ErrorKind::InvalidInput, format!("invalid file: {}", self.file)));
-        } else {
-            let mut gpx : Gpx = Default::default();
-            gpx.version = GpxVersion::Gpx11;
-
-            let mut track: Track = src_track.clone();
-            track.segments.clear();
-            track.segments.push(segment.to_owned());
-            gpx.tracks.push(track);
-
-            let new_name = format!("{}_{}.{}", parts[1], counter, parts[0]);
-
-            let file = File::create(new_name)?;
-            let res = write(&gpx, file);
-            return match res {
-                Ok(_) => Ok(()),
-                Err(gpx_err) => Err(Error::new(ErrorKind::Other, gpx_err.to_string()))
-            }
         }
+        let name = format!("{}_{}.{}", parts[1], counter, parts[0]);
+        Ok(name)
     }
 }
 

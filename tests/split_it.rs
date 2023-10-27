@@ -6,7 +6,7 @@ use gpx_split::PointsSplitter;
 
 #[test]
 fn test_length() {
-    let s = LengthSplitter::new(200.0);
+    let s = LengthSplitter::new(1000.0);
     let mut c = Context {
         file: "tests/test.gpx",
         strategy: s,
