@@ -32,7 +32,7 @@ fn test_distance() {
 ///
 fn distance_track(track_segment: TrackSegment) -> f64 {
     let points = track_segment.points.iter().map(|p| p.point()).map(|p| Point::new(p.x(), p.y())).collect();
-    return distance(points);
+    distance(points)
 }
 
 /// Function to convert an GpxError
