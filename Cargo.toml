@@ -9,3 +9,6 @@ edition = "2021"
 clap = "4.4.6"
 gpx = "0.9.1"
 haversine-rs = "0.3.0"
+
+[build-dependencies]
+copy_to_output = "2.1.0"

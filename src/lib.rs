@@ -49,8 +49,12 @@ pub struct Context<'a, S> {
 
 impl<S> Context<'_, S>
 where
-    S: Splitter + Debug,
+    S: Splitter,
 {
+    pub fn new(file: &'static str, strategy: S) -> Self {
+        Context { file, strategy }
+    }
+
     pub fn execute(&mut self) {
         println!("Common preamble");
         let mut counter: u32 = 1;
@@ -65,7 +69,6 @@ where
                 track_segment.points.push(point);
 
                     if self.strategy.exceeds_limit(track_segment.to_owned()) {
-                        println!("Splitting {} with {:?}", counter, self.strategy);
                         self.write_gpx(&track, &track_segment, counter).unwrap();
 
                         counter += 1;
