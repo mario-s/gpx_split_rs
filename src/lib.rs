@@ -131,19 +131,18 @@ pub trait Splitter {
 ///
 #[derive(Debug)]
 pub struct PointsSplitter {
-    max_limit: u32,
+    max_points: u32,
 }
 
 impl PointsSplitter {
-    pub fn new(max_limit: u32) -> Self {
-        PointsSplitter { max_limit }
+    pub fn new(max_points: u32) -> Self {
+        PointsSplitter { max_points: max_points }
     }
 }
 
 impl Splitter for PointsSplitter {
-
     fn exceeds_limit(&self, track_segment: TrackSegment) -> bool {
-        track_segment.points.len() > self.max_limit.try_into().unwrap()
+        track_segment.points.len() > self.max_points.try_into().unwrap()
     }
 }
 
@@ -153,17 +152,17 @@ impl Splitter for PointsSplitter {
 ///
 #[derive(Debug)]
 pub struct LengthSplitter {
-    max_limit: f64,
+    max_length: f64,
 }
 
 impl LengthSplitter {
-    pub fn new(max_limit: f64) -> Self {
-        LengthSplitter { max_limit }
+    pub fn new(max_length: f64) -> Self {
+        LengthSplitter { max_length: max_length }
     }
 }
 
 impl Splitter for LengthSplitter {
     fn exceeds_limit(&self, track_segment: TrackSegment) -> bool {
-        distance_track(track_segment) > self.max_limit
+        distance_track(track_segment) > self.max_length
     }
 }
