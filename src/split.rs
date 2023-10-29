@@ -20,7 +20,6 @@ where
     }
 
     pub fn execute(&mut self) {
-        println!("Common preamble");
         let mut counter: u32 = 1;
         let gpx = io::read_gpx(self.file).unwrap();
 
@@ -30,19 +29,28 @@ where
             track.segments.iter()
             .flat_map(|segment| segment.points.iter().cloned())
             .for_each(|point| {
-                track_segment.points.push(point);
+                track_segment.points.push(point.clone());
 
                     if self.strategy.exceeds_limit(track_segment.to_owned()) {
                         self.write_gpx(&gpx, &track, &track_segment, counter).unwrap();
 
                         counter += 1;
-                        track_segment = TrackSegment::new();
+                        //we start a fresh with a clear vector of points
+                        track_segment.points.clear();
+                        //add current point as first one to new segment
+                        track_segment.points.push(point);
                     }
             });
         }
-        //TODO write remaining
 
-        println!("Common postamble");
+        //this will be in most cases true
+        //but it can happen that we split at the end
+        if track_segment.points.len() > 1 {
+            match gpx.tracks.last() {
+                Some(last) => self.write_gpx(&gpx, last, &track_segment, counter).unwrap(),
+                None => ()
+            }
+        }
     }
 
     fn write_gpx(&self, src_gpx: &Gpx, src_track: &Track, segment: &TrackSegment, counter: u32) -> Result<(), Error> {
