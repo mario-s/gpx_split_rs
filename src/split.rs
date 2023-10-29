@@ -1,9 +1,6 @@
 use std::fmt::Debug;
 use std::io::{Error, ErrorKind};
-use std::fs::File;
 
-extern crate gpx;
-use gpx::write;
 use gpx::{Gpx, GpxVersion, Track, TrackSegment};
 
 use crate::dist;
@@ -58,12 +55,7 @@ where
         gpx.tracks.push(track);
 
         let path = self.create_path(counter)?;
-        let file = File::create(path)?;
-        let res = write(&gpx, file);
-        match res {
-            Ok(_) => Ok(()),
-            Err(gpx_err) => Err(io::to_error(gpx_err))
-        }
+        io::write_gpx(gpx, path)
     }
 
     fn create_path(&self, counter: u32) -> Result<String, Error> {
