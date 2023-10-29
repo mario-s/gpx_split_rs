@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::io::{Error, ErrorKind};
 
-use gpx::{Gpx, Track, TrackSegment};
+use gpx::{Gpx, Track, TrackSegment, Waypoint};
 
 use crate::dist;
 use crate::io;
@@ -23,46 +23,49 @@ where
         let mut counter: u32 = 1;
         let gpx = io::read_gpx(self.file)?;
 
-        let mut track_segment: TrackSegment = TrackSegment::new();
+        let mut points = Vec::new();
 
         for track in &gpx.tracks {
             track.segments.iter()
             .flat_map(|segment| segment.points.iter().cloned())
             .for_each(|point| {
-                track_segment.points.push(point.clone());
+                points.push(point.clone());
 
-                if self.strategy.exceeds_limit(track_segment.to_owned()) {
-                    if let Err(_) = self.write_gpx(&gpx, &track, &track_segment, counter) {
+                if self.strategy.exceeds_limit(&points) {
+                    if let Err(_) = self.write_gpx(&gpx, &track, &points, counter) {
                         return;
                     }
 
                     counter += 1;
                     //we start a fresh with a clear vector of points
-                    track_segment.points.clear();
+                    points.clear();
                     //add current point as first one to new segment
-                    track_segment.points.push(point);
+                    points.push(point);
                 }
             });
         }
 
         //this will be true in most cases
         //but it can happen that we split at the end
-        if track_segment.points.len() > 1 {
+        if points.len() > 1 {
             match gpx.tracks.last() {
-                Some(last) => self.write_gpx(&gpx, last, &track_segment, counter)?,
+                Some(last) => self.write_gpx(&gpx, last, &points, counter)?,
                 None => ()
             }
         }
         Ok(())
     }
 
-    fn write_gpx(&self, src_gpx: &Gpx, src_track: &Track, segment: &TrackSegment, counter: u32) -> Result<(), Error> {
+    fn write_gpx(&self, src_gpx: &Gpx, src_track: &Track, points: &Vec<Waypoint>, counter: u32) -> Result<(), Error> {
         let mut gpx = src_gpx.clone();
         gpx.tracks.clear();
 
+        let mut track_segment = TrackSegment::new();
+        track_segment.points.append(&mut points.to_owned());
+
         let mut track: Track = src_track.clone();
         track.segments.clear();
-        track.segments.push(segment.to_owned());
+        track.segments.push(track_segment);
 
         gpx.tracks.push(track);
 
@@ -83,7 +86,7 @@ where
 /// -------------------------------------------------
 
 pub trait Splitter {
-    fn exceeds_limit(&self, track_segment: TrackSegment) -> bool;
+    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool;
 }
 
 /// -------------------------------------------------
@@ -102,8 +105,8 @@ impl PointsSplitter {
 }
 
 impl Splitter for PointsSplitter {
-    fn exceeds_limit(&self, track_segment: TrackSegment) -> bool {
-        track_segment.points.len() > self.max_points.try_into().unwrap()
+    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool {
+        points.len() > self.max_points.try_into().unwrap()
     }
 }
 
@@ -123,7 +126,7 @@ impl LengthSplitter {
 }
 
 impl Splitter for LengthSplitter {
-    fn exceeds_limit(&self, track_segment: TrackSegment) -> bool {
-        dist::distance_track(track_segment) > self.max_length
+    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool {
+        dist::distance_points(points.to_owned()) > self.max_length
     }
 }

@@ -1,4 +1,4 @@
-use gpx::TrackSegment;
+use gpx::Waypoint;
 
 use haversine_rs::point::Point;
 use haversine_rs::units::Unit;
@@ -19,10 +19,9 @@ fn test_distance() {
     assert!(distance == 960.9072987659282);
 }
 
-/// Calculates the distance of all points in the track.
+/// Calculates the distance of all waypoints in the track.
 /// Returns result in Meter.
-///
-pub fn distance_track(track_segment: TrackSegment) -> f64 {
-    let points = track_segment.points.iter().map(|p| p.point()).map(|p| Point::new(p.x(), p.y())).collect();
+pub fn distance_points(way_points: Vec<Waypoint>) -> f64 {
+    let points = way_points.iter().map(|p| p.point()).map(|p| Point::new(p.x(), p.y())).collect();
     distance(points)
 }
