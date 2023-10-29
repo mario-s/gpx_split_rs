@@ -43,7 +43,7 @@ where
             });
         }
 
-        //this will be in most cases true
+        //this will be true in most cases
         //but it can happen that we split at the end
         if track_segment.points.len() > 1 {
             match gpx.tracks.last() {
