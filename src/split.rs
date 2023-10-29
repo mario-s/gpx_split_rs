@@ -19,9 +19,9 @@ where
         Context { file, strategy }
     }
 
-    pub fn execute(&mut self) {
+    pub fn execute(&mut self) -> Result<(), Error> {
         let mut counter: u32 = 1;
-        let gpx = io::read_gpx(self.file).unwrap();
+        let gpx = io::read_gpx(self.file)?;
 
         let mut track_segment: TrackSegment = TrackSegment::new();
 
@@ -31,15 +31,17 @@ where
             .for_each(|point| {
                 track_segment.points.push(point.clone());
 
-                    if self.strategy.exceeds_limit(track_segment.to_owned()) {
-                        self.write_gpx(&gpx, &track, &track_segment, counter).unwrap();
-
-                        counter += 1;
-                        //we start a fresh with a clear vector of points
-                        track_segment.points.clear();
-                        //add current point as first one to new segment
-                        track_segment.points.push(point);
+                if self.strategy.exceeds_limit(track_segment.to_owned()) {
+                    if let Err(_) = self.write_gpx(&gpx, &track, &track_segment, counter) {
+                        return;
                     }
+
+                    counter += 1;
+                    //we start a fresh with a clear vector of points
+                    track_segment.points.clear();
+                    //add current point as first one to new segment
+                    track_segment.points.push(point);
+                }
             });
         }
 
@@ -47,10 +49,11 @@ where
         //but it can happen that we split at the end
         if track_segment.points.len() > 1 {
             match gpx.tracks.last() {
-                Some(last) => self.write_gpx(&gpx, last, &track_segment, counter).unwrap(),
+                Some(last) => self.write_gpx(&gpx, last, &track_segment, counter)?,
                 None => ()
             }
         }
+        Ok(())
     }
 
     fn write_gpx(&self, src_gpx: &Gpx, src_track: &Track, segment: &TrackSegment, counter: u32) -> Result<(), Error> {

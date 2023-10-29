@@ -15,5 +15,5 @@ fn main() {
 
 fn execute<S>(file: &'static str, strategy: S) where S: Splitter {
     let mut c = Context::new(file, strategy);
-    c.execute();
+    c.execute().expect("failed to spilt file!");
 }

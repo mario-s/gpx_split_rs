@@ -9,7 +9,10 @@ fn test_length() {
         file: "target/debug/test_l.gpx",
         strategy: LengthSplitter::new(1000.0),
     };
-    c.execute();
+    match c.execute() {
+        Ok(_) => Ok(()),
+        Err(exc) => fail!(exc)
+    }
 }
 
 #[test]
@@ -18,5 +21,8 @@ fn test_points() {
         file: "target/debug/test_p.gpx",
         strategy: PointsSplitter::new(50),
     };
-    c.execute();
+    match c.execute() {
+        Ok(_) => Ok(()),
+        Err(exc) => fail!(exc)
+    }
 }
