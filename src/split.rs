@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::io::{Error, ErrorKind};
 
-use gpx::{Gpx, GpxVersion, Track, TrackSegment};
+use gpx::{Gpx, Track, TrackSegment};
 
 use crate::dist;
 use crate::io;
@@ -26,14 +26,14 @@ where
 
         let mut track_segment: TrackSegment = TrackSegment::new();
 
-        for track in gpx.tracks {
+        for track in &gpx.tracks {
             track.segments.iter()
             .flat_map(|segment| segment.points.iter().cloned())
             .for_each(|point| {
                 track_segment.points.push(point);
 
                     if self.strategy.exceeds_limit(track_segment.to_owned()) {
-                        self.write_gpx(&track, &track_segment, counter).unwrap();
+                        self.write_gpx(&gpx, &track, &track_segment, counter).unwrap();
 
                         counter += 1;
                         track_segment = TrackSegment::new();
@@ -45,13 +45,14 @@ where
         println!("Common postamble");
     }
 
-    fn write_gpx(&self, src_track: &Track, segment: &TrackSegment, counter: u32) -> Result<(), Error> {
-        let mut gpx : Gpx = Default::default();
-        gpx.version = GpxVersion::Gpx11;
+    fn write_gpx(&self, src_gpx: &Gpx, src_track: &Track, segment: &TrackSegment, counter: u32) -> Result<(), Error> {
+        let mut gpx = src_gpx.clone();
+        gpx.tracks.clear();
 
         let mut track: Track = src_track.clone();
         track.segments.clear();
         track.segments.push(segment.to_owned());
+
         gpx.tracks.push(track);
 
         let path = self.create_path(counter)?;
