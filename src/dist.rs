@@ -1,10 +1,8 @@
-extern crate gpx;
+use gpx::TrackSegment;
 
 use haversine_rs::point::Point;
 use haversine_rs::units::Unit;
 use haversine_rs::distance_vec;
-
-use gpx::TrackSegment;
 
 /// Calculates the distance between multiple points.
 /// Returns result in Meter.

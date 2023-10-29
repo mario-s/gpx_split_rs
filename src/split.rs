@@ -1,21 +1,13 @@
 use std::fmt::Debug;
-use std::io::{BufReader, Error, ErrorKind};
+use std::io::{Error, ErrorKind};
 use std::fs::File;
 
 extern crate gpx;
-use gpx::errors::GpxError;
-use gpx::read;
 use gpx::write;
 use gpx::{Gpx, GpxVersion, Track, TrackSegment};
 
 use crate::dist;
-
-/// Function to convert an GpxError
-fn to_error(gpx_err: GpxError) -> Error {
-    Error::new(ErrorKind::Other, gpx_err.to_string())
-}
-
-/// -------------------------------------------------
+use crate::io;
 
 pub struct Context<'a, S> {
     pub file: &'a str,
@@ -33,7 +25,7 @@ where
     pub fn execute(&mut self) {
         println!("Common preamble");
         let mut counter: u32 = 1;
-        let gpx = self.read_gpx().unwrap();
+        let gpx = io::read_gpx(self.file).unwrap();
 
         let mut track_segment: TrackSegment = TrackSegment::new();
 
@@ -56,16 +48,6 @@ where
         println!("Common postamble");
     }
 
-    fn read_gpx(&self) -> Result<Gpx, Error> {
-        let file = File::open(self.file)?;
-        let reader = BufReader::new(file);
-
-        match read(reader) {
-            Ok(gpx) => Ok(gpx),
-            Err(gpx_err) => Err(to_error(gpx_err))
-        }
-    }
-
     fn write_gpx(&self, src_track: &Track, segment: &TrackSegment, counter: u32) -> Result<(), Error> {
         let mut gpx : Gpx = Default::default();
         gpx.version = GpxVersion::Gpx11;
@@ -80,7 +62,7 @@ where
         let res = write(&gpx, file);
         match res {
             Ok(_) => Ok(()),
-            Err(gpx_err) => Err(to_error(gpx_err))
+            Err(gpx_err) => Err(io::to_error(gpx_err))
         }
     }
 
