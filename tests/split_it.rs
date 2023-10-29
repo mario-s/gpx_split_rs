@@ -1,8 +1,6 @@
-extern crate gpx_split;
-
-use gpx_split::Context;
-use gpx_split::LengthSplitter;
-use gpx_split::PointsSplitter;
+use gpx_split::split::Context;
+use gpx_split::split::LengthSplitter;
+use gpx_split::split::PointsSplitter;
 
 const FILE: &str = "target/debug/test.gpx";
 
