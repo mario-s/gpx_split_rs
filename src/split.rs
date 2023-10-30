@@ -100,7 +100,7 @@ pub struct PointsSplitter {
 
 impl PointsSplitter {
     pub fn new(max_points: u32) -> Self {
-        PointsSplitter { max_points: max_points }
+        PointsSplitter { max_points }
     }
 }
 
@@ -121,7 +121,7 @@ pub struct LengthSplitter {
 
 impl LengthSplitter {
     pub fn new(max_length: f64) -> Self {
-        LengthSplitter { max_length: max_length }
+        LengthSplitter { max_length }
     }
 }
 
