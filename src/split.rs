@@ -19,7 +19,7 @@ where
         Context { file, strategy }
     }
 
-    pub fn execute(&mut self) -> Result<(), Error> {
+    pub fn execute(&mut self) -> Result<u32, Error> {
         let mut counter: u32 = 1;
         let gpx = io::read_gpx(self.file)?;
 
@@ -53,7 +53,7 @@ where
                 None => ()
             }
         }
-        Ok(())
+        Ok(counter)
     }
 
     fn write_gpx(&self, src_gpx: &Gpx, src_track: &Track, points: &Vec<Waypoint>, counter: u32) -> Result<(), Error> {

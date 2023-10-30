@@ -9,7 +9,8 @@ fn test_length() {
         file: "target/debug/test_l.gpx",
         strategy: LengthSplitter::new(1000.0),
     };
-    c.execute().unwrap();
+    let res = c.execute().unwrap();
+    assert_eq!(3, res)
 }
 
 #[test]
@@ -18,5 +19,6 @@ fn test_points() {
         file: "target/debug/test_p.gpx",
         strategy: PointsSplitter::new(50),
     };
-    c.execute().unwrap();
+    let res = c.execute().unwrap();
+    assert_eq!(2, res)
 }
