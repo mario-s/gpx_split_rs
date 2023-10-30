@@ -20,19 +20,20 @@ where
     }
 
     pub fn execute(&mut self) -> Result<u32, Error> {
-        let mut counter: u32 = 1;
         let gpx = io::read_gpx(self.file)?;
 
+        let mut counter: u32 = 1;
         let mut points = Vec::new();
+        let tracks = &gpx.tracks;
 
-        for track in &gpx.tracks {
+        for track in tracks {
             track.segments.iter()
             .flat_map(|segment| segment.points.iter().cloned())
             .for_each(|point| {
                 points.push(point.clone());
 
                 if self.strategy.exceeds_limit(&points) {
-                    if let Err(_) = self.write_gpx(&gpx, &track, &points, counter) {
+                    if let Err(_) = self.write_track(&gpx, track, &points, counter) {
                         return;
                     }
 
@@ -48,15 +49,14 @@ where
         //this will be true in most cases
         //but it can happen that we split at the end
         if points.len() > 1 {
-            match gpx.tracks.last() {
-                Some(last) => self.write_gpx(&gpx, last, &points, counter)?,
-                None => ()
+            if let Some(last) = gpx.tracks.last() {
+                self.write_track(&gpx, last, &points, counter)?
             }
         }
         Ok(counter)
     }
 
-    fn write_gpx(&self, src_gpx: &Gpx, src_track: &Track, points: &Vec<Waypoint>, counter: u32) -> Result<(), Error> {
+    fn write_track(&self, src_gpx: &Gpx, src_track: &Track, points: &Vec<Waypoint>, counter: u32) -> Result<(), Error> {
         let mut gpx = src_gpx.clone();
         gpx.tracks.clear();
 
@@ -86,7 +86,7 @@ where
 /// -------------------------------------------------
 
 pub trait Splitter {
-    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool;
+    fn exceeds_limit(&self, points: &[Waypoint]) -> bool;
 }
 
 /// -------------------------------------------------
@@ -105,7 +105,7 @@ impl PointsSplitter {
 }
 
 impl Splitter for PointsSplitter {
-    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool {
+    fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
         points.len() > self.max_points.try_into().unwrap()
     }
 }
@@ -126,7 +126,7 @@ impl LengthSplitter {
 }
 
 impl Splitter for LengthSplitter {
-    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool {
+    fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
         dist::distance_points(points.to_owned()) > self.max_length
     }
 }
