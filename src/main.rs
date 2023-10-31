@@ -7,7 +7,8 @@ use gpx_split::split::PointsSplitter;
 use gpx_split::split::Splitter;
 
 /// program to split a gpx file
-#[derive(Parser, Default, Debug)]
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
 struct Arguments {
     /// path of the file to split
     #[arg(short, long)]
