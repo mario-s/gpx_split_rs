@@ -116,17 +116,17 @@ impl Splitter for PointsSplitter {
 ///
 #[derive(Debug)]
 pub struct LengthSplitter {
-    max_length: f64,
+    max_length: u32,
 }
 
 impl LengthSplitter {
-    pub fn new(max_length: f64) -> Self {
+    pub fn new(max_length: u32) -> Self {
         LengthSplitter { max_length }
     }
 }
 
 impl Splitter for LengthSplitter {
     fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
-        dist::distance_points(points.to_owned()) > self.max_length
+        dist::distance_points(points.to_owned()) > self.max_length.into()
     }
 }

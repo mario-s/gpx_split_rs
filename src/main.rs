@@ -16,7 +16,7 @@ struct Arguments {
     /// type of splitting: either 'p' or 'l'
     #[arg(short, long, default_value_t = 'p')]
     split_type: char,
-    /// The track will be split when the maximum is exceeded, points or length
+    /// The track will be split when the maximum is exceeded, points or length in Meter
     #[arg(short, long, default_value_t = 500)]
     max: u32,
 }
@@ -28,7 +28,7 @@ fn main() {
     let max = args.max;
 
     match split {
-        'l' => execute(path, LengthSplitter::new(max as f64)),
+        'l' => execute(path, LengthSplitter::new(max)),
         'p' => execute(path, PointsSplitter::new(max)),
         _   => panic!("unknown split type: '{}'", split),
     }

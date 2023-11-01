@@ -7,7 +7,7 @@ use gpx_split::split::PointsSplitter;
 fn test_length() {
     let mut c = Context {
         path: "target/debug/test_l.gpx".to_string(),
-        strategy: LengthSplitter::new(1000.0),
+        strategy: LengthSplitter::new(1000),
     };
     let res = c.execute().unwrap();
     assert_eq!(3, res)
