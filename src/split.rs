@@ -13,7 +13,7 @@ pub struct Context<S> {
 
 impl<S> Context<S>
 where
-    S: Splitter,
+    S: Limit,
 {
     pub fn new(path: String, strategy: S) -> Self {
         Context { path, strategy }
@@ -85,26 +85,27 @@ where
 
 /// -------------------------------------------------
 
-pub trait Splitter {
+/// Checks if the number of points exceed a defined limit.
+pub trait Limit {
     fn exceeds_limit(&self, points: &[Waypoint]) -> bool;
 }
 
 /// -------------------------------------------------
 
-/// strategy to split based on the number of points
+/// strategy to check limit based on the number of points
 ///
 #[derive(Debug)]
-pub struct PointsSplitter {
+pub struct PointsLimit {
     max_points: u32,
 }
 
-impl PointsSplitter {
+impl PointsLimit {
     pub fn new(max_points: u32) -> Self {
-        PointsSplitter { max_points }
+        PointsLimit { max_points }
     }
 }
 
-impl Splitter for PointsSplitter {
+impl Limit for PointsLimit {
     fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
         points.len() > self.max_points.try_into().unwrap()
     }
@@ -112,20 +113,20 @@ impl Splitter for PointsSplitter {
 
 /// -------------------------------------------------
 
-/// strategy to split based on the lenth of a segment
+/// strategy to check limit based on the lenth of a segment
 ///
 #[derive(Debug)]
-pub struct LengthSplitter {
+pub struct LengthLimit {
     max_length: u32,
 }
 
-impl LengthSplitter {
+impl LengthLimit {
     pub fn new(max_length: u32) -> Self {
-        LengthSplitter { max_length }
+        LengthLimit { max_length }
     }
 }
 
-impl Splitter for LengthSplitter {
+impl Limit for LengthLimit {
     fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
         dist::distance_points(points.to_owned()) > self.max_length.into()
     }
