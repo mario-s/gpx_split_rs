@@ -38,7 +38,7 @@ where
                     }
 
                     counter += 1;
-                    //we start a fresh with a clear vector of points
+                    //we start afresh with a clear vector of points
                     points.clear();
                     //add current point as first one to new segment
                     points.push(point);
@@ -46,8 +46,8 @@ where
             });
         }
 
-        //this will be true in most cases
-        //but it can happen that we split at the end
+        //this condition will be true in most cases
+        //but it can happen that we split at the end of track, in this case we have only one point
         if points.len() > 1 {
             if let Some(last) = gpx.tracks.last() {
                 self.write_track(&gpx, last, &points, counter)?
@@ -57,6 +57,7 @@ where
     }
 
     fn write_track(&self, src_gpx: &Gpx, src_track: &Track, points: &Vec<Waypoint>, counter: u32) -> Result<(), Error> {
+        //clone the source gpx and just clear the tracks to keep the rest
         let mut gpx = src_gpx.clone();
         gpx.tracks.clear();
 
@@ -78,19 +79,20 @@ where
         if parts.len() != 2 {
             return Err(Error::new(ErrorKind::InvalidInput, format!("invalid file: {}", self.path)));
         }
+        //new file name would be like foo_1.gpx
         let name = format!("{}_{}.{}", parts[1], counter, parts[0]);
         Ok(name)
     }
 }
 
-/// -------------------------------------------------
+//-------------------------------------------------
 
-/// Checks if the number of points exceed a defined limit.
+/// Checks if the points exceed a defined limit.
 pub trait Limit {
     fn exceeds_limit(&self, points: &[Waypoint]) -> bool;
 }
 
-/// -------------------------------------------------
+//-------------------------------------------------
 
 /// strategy to check limit based on the number of points
 ///
@@ -111,9 +113,9 @@ impl Limit for PointsLimit {
     }
 }
 
-/// -------------------------------------------------
+//-------------------------------------------------
 
-/// strategy to check limit based on the lenth of a segment
+/// strategy to check limit based on the length of the sum of the distances between the points
 ///
 #[derive(Debug)]
 pub struct LengthLimit {
