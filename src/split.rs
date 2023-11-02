@@ -56,6 +56,45 @@ where
         Ok(counter)
     }
 
+    fn spilt_tracks(&self, tracks: &Vec<Track>) -> Vec<Track> {
+        let mut new_tracks = Vec::new();
+        let mut points = Vec::new();
+        for track in tracks {
+            track.segments.iter()
+            .flat_map(|segment| segment.points.iter().cloned())
+            .for_each(|point| {
+                points.push(point.clone());
+                if self.strategy.exceeds_limit(&points) {
+
+                    let new_track = self.new_track(track, &points);
+                    new_tracks.push(new_track);
+
+                    points.clear();
+                }
+            });
+        }
+        //this condition will be true in most cases
+        //but it can happen that we split at the end of track, in this case we have only one point
+        if points.len() > 1 {
+            if let Some(last) = tracks.last() {
+                let new_track = self.new_track(last, &points);
+                new_tracks.push(new_track);
+            }
+        }
+        new_tracks
+    }
+
+    fn new_track(&self, src_track: &Track, points: &Vec<Waypoint>) -> Track {
+        let mut clone_track = src_track.clone();
+
+        let mut track_segment = TrackSegment::new();
+        track_segment.points.append(&mut points.to_owned());
+        clone_track.segments.clear();
+        clone_track.segments.push(track_segment);
+
+        clone_track
+    }
+
     fn write_track(&self, src_gpx: &Gpx, src_track: &Track, points: &Vec<Waypoint>, counter: u32) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
         let mut gpx = src_gpx.clone();
