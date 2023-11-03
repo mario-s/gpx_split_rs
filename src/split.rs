@@ -130,7 +130,6 @@ where
                 new_tracks.push(new_track);
             }
         }
-        //TODO take last 2 point and create a new track if there are less only one
         new_tracks
     }
 
