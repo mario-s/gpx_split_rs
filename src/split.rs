@@ -7,7 +7,7 @@ use crate::dist;
 use crate::io;
 
 
-/// Checks if the points exceed a defined limit.
+/// checks if the points exceed a defined limit.
 pub trait Limit {
     fn exceeds_limit(&self, points: &[Waypoint]) -> bool;
 }
@@ -77,6 +77,8 @@ where
         self.write_tracks(gpx, tracks)
     }
 
+    /// splits the given tracks into new tracks where the number of points of that tracks are limted
+    ///
     fn spilt_tracks(&self, tracks: &Vec<Track>) -> Vec<Track> {
         let mut new_tracks = Vec::new();
         let mut points = Vec::new();
@@ -85,8 +87,10 @@ where
             .flat_map(|segment| segment.points.iter().cloned())
             .for_each(|point| {
                 points.push(point.clone());
+
+                //create a new track when the points exceed a limit
                 if self.strategy.exceeds_limit(&points) {
-                    let new_track = self.new_track(track, &points);
+                    let new_track = self.clone_track(track, &points);
                     new_tracks.push(new_track);
 
                     points.clear();
@@ -99,24 +103,28 @@ where
         //but it can happen that we split at the end of track, in this case we have only one point
         if points.len() > 1 {
             if let Some(last) = tracks.last() {
-                let new_track = self.new_track(last, &points);
+                let new_track = self.clone_track(last, &points);
                 new_tracks.push(new_track);
             }
         }
         new_tracks
     }
 
-    fn new_track(&self, src_track: &Track, points: &Vec<Waypoint>) -> Track {
+    /// clone the source track and add new track segment with the points
+    ///
+    fn clone_track(&self, src_track: &Track, points: &Vec<Waypoint>) -> Track {
         let mut track_segment = TrackSegment::new();
         track_segment.points.append(&mut points.to_owned());
 
-        let mut clone_track = src_track.clone();
-        clone_track.segments.clear();
-        clone_track.segments.push(track_segment);
+        let mut cloned_track = src_track.clone();
+        cloned_track.segments.clear();
+        cloned_track.segments.push(track_segment);
 
-        clone_track
+        cloned_track
     }
 
+    /// writes the given tracks into new files
+    ///
     fn write_tracks(&self, src_gpx: Gpx, tracks: Vec<Track>) -> Result<usize, Error> {
         let len = tracks.len();
 
@@ -127,6 +135,8 @@ where
         Ok(len)
     }
 
+    /// writes a single track into a file, counter is the suffix for the file name
+    ///
     fn write_track(&self, src_gpx: &Gpx, track: &Track, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
         let mut gpx = src_gpx.clone();
@@ -137,6 +147,8 @@ where
         io::write_gpx(gpx, path)
     }
 
+    /// creates a new path to a file
+    ///
     fn create_path(&self, counter: usize) -> Result<String, Error> {
         let parts: Vec<&str> = self.path.rsplitn(2, '.').collect();
         if parts.len() != 2 {
