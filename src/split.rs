@@ -69,39 +69,12 @@ where
         Context { path, strategy }
     }
 
-    pub fn execute(&mut self) -> Result<u32, Error> {
+    pub fn execute(&mut self) -> Result<usize, Error> {
         let gpx = io::read_gpx(self.path.as_str())?;
 
-        let mut counter: u32 = 1;
-        let mut points = Vec::new();
-        let tracks = &gpx.tracks;
+        let tracks = self.spilt_tracks(&gpx.tracks);
 
-        for track in tracks {
-            track.segments.iter()
-            .flat_map(|segment| segment.points.iter().cloned())
-            .for_each(|point| {
-                points.push(point.clone());
-
-                if self.strategy.exceeds_limit(&points) {
-                    if let Err(_) = self.write_track(&gpx, track, &points, counter) {
-                        return;
-                    }
-
-                    counter += 1;
-                    //we start afresh with a clear vector of points
-                    points.clear();
-                }
-            });
-        }
-
-        //this condition will be true in most cases
-        //but it can happen that we split at the end of track, in this case we have only one point
-        if points.len() > 1 {
-            if let Some(last) = gpx.tracks.last() {
-                self.write_track(&gpx, last, &points, counter)?
-            }
-        }
-        Ok(counter)
+        self.write_tracks(gpx, tracks)
     }
 
     fn spilt_tracks(&self, tracks: &Vec<Track>) -> Vec<Track> {
@@ -144,25 +117,27 @@ where
         clone_track
     }
 
-    fn write_track(&self, src_gpx: &Gpx, src_track: &Track, points: &Vec<Waypoint>, counter: u32) -> Result<(), Error> {
+    fn write_tracks(&self, src_gpx: Gpx, tracks: Vec<Track>) -> Result<usize, Error> {
+        let len = tracks.len();
+
+        for (index, track) in tracks.iter().enumerate() {
+            self.write_track(&src_gpx, track, index)?;
+        }
+
+        Ok(len)
+    }
+
+    fn write_track(&self, src_gpx: &Gpx, track: &Track, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
         let mut gpx = src_gpx.clone();
         gpx.tracks.clear();
-
-        let mut track_segment = TrackSegment::new();
-        track_segment.points.append(&mut points.to_owned());
-
-        let mut track: Track = src_track.clone();
-        track.segments.clear();
-        track.segments.push(track_segment);
-
-        gpx.tracks.push(track);
+        gpx.tracks.push(track.to_owned());
 
         let path = self.create_path(counter)?;
         io::write_gpx(gpx, path)
     }
 
-    fn create_path(&self, counter: u32) -> Result<String, Error> {
+    fn create_path(&self, counter: usize) -> Result<String, Error> {
         let parts: Vec<&str> = self.path.rsplitn(2, '.').collect();
         if parts.len() != 2 {
             return Err(Error::new(ErrorKind::InvalidInput, format!("invalid file: {}", self.path)));
