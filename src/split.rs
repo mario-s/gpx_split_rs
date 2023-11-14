@@ -25,6 +25,11 @@ where
     }
 }
 
+//-----------------------------------------------------------------------------
+
+trait Splitter {
+    fn split(&self, gpx: Gpx) -> Result<usize, Error>;
+}
 
 struct TrackSplitter<L> {
     path: String,
@@ -35,12 +40,6 @@ impl<L> TrackSplitter<L> where L: Limit {
 
     pub fn new(path: String, limit: L) -> Self {
         TrackSplitter { path, limit }
-    }
-
-    fn split(&self, gpx: Gpx) -> Result<usize, Error> {
-        let tracks = self.spilt_tracks(&gpx.tracks);
-
-        self.write_tracks(gpx, tracks)
     }
 
     /// splits the given tracks into new tracks where the number of points of that tracks are limted
@@ -111,6 +110,14 @@ impl<L> TrackSplitter<L> where L: Limit {
 
         let path = io::create_path(&self.path, counter)?;
         io::write_gpx(gpx, path)
+    }
+}
+
+impl<L> Splitter for TrackSplitter<L> where L: Limit {
+
+    fn split(&self, gpx: Gpx) -> Result<usize, Error> {
+        let tracks = self.spilt_tracks(&gpx.tracks);
+        self.write_tracks(gpx, tracks)
     }
 }
 
