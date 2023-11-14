@@ -2,9 +2,8 @@
 use clap::{Parser, ValueEnum};
 
 use gpx_split::split::Context;
-use gpx_split::split::LengthLimit;
-use gpx_split::split::PointsLimit;
-use gpx_split::split::Limit;
+use gpx_split::limit::{Limit, LengthLimit, PointsLimit};
+
 
 /// program to split a GPX file
 #[derive(Parser)]

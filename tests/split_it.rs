@@ -1,6 +1,6 @@
 use gpx_split::split::Context;
-use gpx_split::split::LengthLimit;
-use gpx_split::split::PointsLimit;
+use gpx_split::limit::LengthLimit;
+use gpx_split::limit::PointsLimit;
 
 
 #[test]

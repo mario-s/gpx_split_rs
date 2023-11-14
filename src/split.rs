@@ -1,60 +1,9 @@
-use std::fmt::Debug;
 use std::io::{Error, ErrorKind};
-
 use gpx::{Gpx, Track, TrackSegment, Waypoint};
 
-use crate::dist;
+use crate::limit::Limit;
 use crate::io;
 
-
-/// checks if the points exceed a defined limit.
-pub trait Limit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool;
-}
-
-//-------------------------------------------------
-
-/// strategy to check limit based on the number of points
-///
-#[derive(Debug)]
-pub struct PointsLimit {
-    max_points: u32,
-}
-
-impl PointsLimit {
-    pub fn new(max_points: u32) -> Self {
-        PointsLimit { max_points }
-    }
-}
-
-impl Limit for PointsLimit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
-        points.len() >= self.max_points.try_into().unwrap()
-    }
-}
-
-//-------------------------------------------------
-
-/// strategy to check limit based on the length of the sum of the distances between the points
-///
-#[derive(Debug)]
-pub struct LengthLimit {
-    max_length: u32,
-}
-
-impl LengthLimit {
-    pub fn new(max_length: u32) -> Self {
-        LengthLimit { max_length }
-    }
-}
-
-impl Limit for LengthLimit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
-        dist::distance_points(points.to_owned()) > self.max_length.into()
-    }
-}
-
-//------------------------------------------------------
 
 pub struct Context<S> {
     pub path: String,
@@ -164,7 +113,7 @@ where
 fn test_split_track_zero() {
     let track = Track::new();
 
-    let s = PointsLimit::new(0);
+    let s = crate::limit::PointsLimit::new(0);
     let c = Context::new("".to_string(), s);
     let tracks = c.spilt_tracks(&vec![track]);
     assert_eq!(0, tracks.len());
@@ -180,7 +129,7 @@ fn test_split_track_2() {
     }
     let mut track = Track::new();
     track.segments.push(segment);
-    let c = Context::new("".to_string(), PointsLimit::new(2));
+    let c = Context::new("".to_string(), crate::limit::PointsLimit::new(2));
     let tracks = c.spilt_tracks(&vec![track]);
 
     //expect 2 tracks with 1 segment each containing 2 points
