@@ -1,4 +1,4 @@
-use std::io::{Error, ErrorKind};
+use std::io::Error;
 use gpx::{Gpx, Track, TrackSegment, Waypoint};
 
 use crate::limit::Limit;
@@ -92,22 +92,11 @@ where
         gpx.tracks.clear();
         gpx.tracks.push(track.to_owned());
 
-        let path = self.create_path(counter)?;
+        let path = io::create_path(&self.path, counter)?;
         io::write_gpx(gpx, path)
     }
-
-    /// creates a new path to a file
-    ///
-    fn create_path(&self, counter: usize) -> Result<String, Error> {
-        let parts: Vec<&str> = self.path.rsplitn(2, '.').collect();
-        if parts.len() != 2 {
-            return Err(Error::new(ErrorKind::InvalidInput, format!("invalid file: {}", self.path)));
-        }
-        //new file name would be like foo_1.gpx
-        let name = format!("{}_{}.{}", parts[1], counter, parts[0]);
-        Ok(name)
-    }
 }
+
 
 #[test]
 fn test_split_track_zero() {
