@@ -41,7 +41,7 @@ fn main() {
     }
 }
 
-fn execute<S>(path: String, strategy: S) where S: Limit {
+fn execute<S>(path: String, strategy: S) where S: Limit + Clone {
     let mut c = Context::new(path, strategy);
     c.execute().expect("failed to spilt file!");
 }

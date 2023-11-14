@@ -12,7 +12,7 @@ pub struct Context<S> {
 
 impl<S> Context<S>
 where
-    S: Limit,
+    S: Limit + Clone,
 {
     pub fn new(path: String, strategy: S) -> Self {
         Context { path, strategy }
@@ -20,7 +20,24 @@ where
 
     pub fn execute(&mut self) -> Result<usize, Error> {
         let gpx = io::read_gpx(self.path.as_str())?;
+        let splitter = TrackSplitter::new(self.path.clone(), self.strategy.clone());
+        splitter.split(gpx)
+    }
+}
 
+
+struct TrackSplitter<L> {
+    path: String,
+    limit: L,
+}
+
+impl<L> TrackSplitter<L> where L: Limit {
+
+    pub fn new(path: String, limit: L) -> Self {
+        TrackSplitter { path, limit }
+    }
+
+    fn split(&self, gpx: Gpx) -> Result<usize, Error> {
         let tracks = self.spilt_tracks(&gpx.tracks);
 
         self.write_tracks(gpx, tracks)
@@ -38,7 +55,7 @@ where
                 points.push(point.clone());
 
                 //create a new track when the points exceed a limit
-                if self.strategy.exceeds_limit(&points) {
+                if self.limit.exceeds_limit(&points) {
                     let new_track = self.clone_track(track, &points);
                     new_tracks.push(new_track);
 
@@ -97,14 +114,13 @@ where
     }
 }
 
-
 #[test]
 fn test_split_track_zero() {
     let track = Track::new();
 
-    let s = crate::limit::PointsLimit::new(0);
-    let c = Context::new("".to_string(), s);
-    let tracks = c.spilt_tracks(&vec![track]);
+    let lim = crate::limit::PointsLimit::new(0);
+    let split = TrackSplitter::new("".to_string(), lim);
+    let tracks = split.spilt_tracks(&vec![track]);
     assert_eq!(0, tracks.len());
 }
 
@@ -118,8 +134,9 @@ fn test_split_track_2() {
     }
     let mut track = Track::new();
     track.segments.push(segment);
-    let c = Context::new("".to_string(), crate::limit::PointsLimit::new(2));
-    let tracks = c.spilt_tracks(&vec![track]);
+    let lim = crate::limit::PointsLimit::new(2);
+    let split = TrackSplitter::new("".to_string(), lim);
+    let tracks = split.spilt_tracks(&vec![track]);
 
     //expect 2 tracks with 1 segment each containing 2 points
     assert_eq!(3, tracks.len());

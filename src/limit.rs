@@ -12,7 +12,7 @@ pub trait Limit {
 
 /// strategy to check limit based on the number of points
 ///
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PointsLimit {
     max_points: u32,
 }
@@ -33,7 +33,7 @@ impl Limit for PointsLimit {
 
 /// strategy to check limit based on the length of the sum of the distances between the points
 ///
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LengthLimit {
     max_length: u32,
 }
