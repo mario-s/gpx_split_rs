@@ -1,7 +1,7 @@
 //import
 use clap::{Parser, ValueEnum};
 
-use gpx_split::split::Context;
+use gpx_split::split::TrackSplitter;
 use gpx_split::limit::{Limit, LengthLimit, PointsLimit};
 
 
@@ -41,7 +41,7 @@ fn main() {
     }
 }
 
-fn execute<S>(path: String, strategy: S) where S: Limit + Clone {
-    let mut c = Context::new(path, strategy);
-    c.execute().expect("failed to spilt file!");
+fn execute<L>(path: String, limit: L) where L: Limit + Clone {
+    let s = TrackSplitter::new(path, limit);
+    s.split().expect("failed to spilt file!");
 }

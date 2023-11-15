@@ -4,34 +4,7 @@ use gpx::{Gpx, Track, TrackSegment, Waypoint};
 use crate::limit::Limit;
 use crate::io;
 
-
-pub struct Context<S> {
-    pub path: String,
-    pub strategy: S,
-}
-
-impl<S> Context<S>
-where
-    S: Limit + Clone,
-{
-    pub fn new(path: String, strategy: S) -> Self {
-        Context { path, strategy }
-    }
-
-    pub fn execute(&mut self) -> Result<usize, Error> {
-        let gpx = io::read_gpx(self.path.as_str())?;
-        let splitter = TrackSplitter::new(self.path.clone(), self.strategy.clone());
-        splitter.split(gpx)
-    }
-}
-
-//-----------------------------------------------------------------------------
-
-trait Splitter {
-    fn split(&self, gpx: Gpx) -> Result<usize, Error>;
-}
-
-struct TrackSplitter<L> {
+pub struct TrackSplitter<L> {
     path: String,
     limit: L,
 }
@@ -40,6 +13,12 @@ impl<L> TrackSplitter<L> where L: Limit {
 
     pub fn new(path: String, limit: L) -> Self {
         TrackSplitter { path, limit }
+    }
+
+    pub fn split(&self) -> Result<usize, Error> {
+        let gpx = io::read_gpx(self.path.as_str())?;
+        let tracks = self.spilt_tracks(&gpx.tracks);
+        self.write_tracks(gpx, tracks)
     }
 
     /// splits the given tracks into new tracks where the number of points of that tracks are limted
@@ -113,13 +92,6 @@ impl<L> TrackSplitter<L> where L: Limit {
     }
 }
 
-impl<L> Splitter for TrackSplitter<L> where L: Limit {
-
-    fn split(&self, gpx: Gpx) -> Result<usize, Error> {
-        let tracks = self.spilt_tracks(&gpx.tracks);
-        self.write_tracks(gpx, tracks)
-    }
-}
 
 #[test]
 fn test_split_track_zero() {
