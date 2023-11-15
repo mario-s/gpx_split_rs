@@ -4,6 +4,48 @@ use gpx::{Gpx, Track, TrackSegment, Waypoint, Route};
 use crate::limit::Limit;
 use crate::io;
 
+
+pub struct RouteSplitter <L> {
+    path: String,
+    limit: L,
+}
+
+impl<L> RouteSplitter<L> where L: Limit {
+
+    pub fn new(path: String, limit: L) -> Self {
+        RouteSplitter { path, limit }
+    }
+
+    pub fn split(&self) -> Result<usize, Error> {
+        let gpx = io::read_gpx(self.path.as_str())?;
+        self.spilt_routes(&gpx.routes);
+        Ok(0)
+    }
+
+    fn spilt_routes(&self, routes: &Vec<Route>) -> Vec<Route> {
+        let mut new_routes = Vec::new();
+        let mut points = Vec::new();
+        for route in routes {
+            route.points.iter().for_each(|point| {
+                points.push(point.clone());
+
+                if self.limit.exceeds_limit(&points) {
+                    //TODO clone route
+                    let new_route = Route::new();
+                    new_routes.push(new_route);
+
+                    points.clear();
+                    //add current point as first one to new segment
+                    points.push(point.to_owned());
+                }
+            });
+        }
+
+        new_routes
+    }
+}
+
+//--------------------------------------------------------------
 pub struct TrackSplitter<L> {
     path: String,
     limit: L,
@@ -92,6 +134,8 @@ impl<L> TrackSplitter<L> where L: Limit {
     }
 }
 
+//--------------------------------------------------------------
+
 #[test]
 fn test_split_track_zero() {
     let track = Track::new();
@@ -143,29 +187,6 @@ fn test_split_track_2() {
     assert_eq!("point 3", last_points.last().and_then(|p| p.name.clone()).unwrap());
 }
 
-
-pub struct RouteSplitter <L> {
-    path: String,
-    limit: L,
-}
-
-impl<L> RouteSplitter<L> where L: Limit {
-
-    pub fn new(path: String, limit: L) -> Self {
-        RouteSplitter { path, limit }
-    }
-
-    pub fn split(&self) -> Result<usize, Error> {
-        let gpx = io::read_gpx(self.path.as_str())?;
-        self.spilt_routes(&gpx.routes);
-        Ok(0)
-    }
-
-    fn spilt_routes(&self, routes: &Vec<Route>) -> Vec<Route> {
-        routes.to_owned()
-    }
-}
-
 #[test]
 fn test_split_route_zero() {
     let route = Route::new();
@@ -173,5 +194,5 @@ fn test_split_route_zero() {
     let lim = crate::limit::PointsLimit::new(0);
     let split = RouteSplitter::new("".to_string(), lim);
     let tracks = split.spilt_routes(&vec![route]);
-    assert_eq!(1, tracks.len());
+    assert_eq!(0, tracks.len());
 }
