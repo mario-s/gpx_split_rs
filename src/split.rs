@@ -18,8 +18,8 @@ impl<L> RouteSplitter<L> where L: Limit {
 
     pub fn split(&self) -> Result<usize, Error> {
         let gpx = io::read_gpx(self.path.as_str())?;
-        self.spilt_routes(&gpx.routes);
-        Ok(0)
+        let routes = self.spilt_routes(&gpx.routes);
+        self.write_routes(gpx, &routes)
     }
 
     fn spilt_routes(&self, routes: &Vec<Route>) -> Vec<Route> {
@@ -55,7 +55,30 @@ impl<L> RouteSplitter<L> where L: Limit {
         let mut cloned_route = src_route.clone();
         cloned_route.points.clear();
         cloned_route.points.append(points);
+        cloned_route.points.shrink_to_fit();
         cloned_route
+    }
+
+    /// writes the given routes into new files
+    ///
+    fn write_routes(&self, src_gpx: Gpx, routes: &Vec<Route>) -> Result<usize, Error> {
+        for (index, route) in routes.iter().enumerate() {
+            self.write_route(&src_gpx, route, index)?;
+        }
+
+        Ok(routes.len())
+    }
+
+    /// writes a single route into a file, counter is the suffix for the file name
+    ///
+    fn write_route(&self, src_gpx: &Gpx, route: &Route, counter: usize) -> Result<(), Error> {
+        //clone the source gpx and just clear the tracks to keep the rest
+        let mut gpx = src_gpx.clone();
+        gpx.routes.clear();
+        gpx.routes.push(route.to_owned());
+
+        let path = io::create_path(&self.path, counter)?;
+        io::write_gpx(gpx, path)
     }
 }
 
@@ -119,6 +142,7 @@ impl<L> TrackSplitter<L> where L: Limit {
         let mut cloned_track = src_track.clone();
         cloned_track.segments.clear();
         cloned_track.segments.push(track_segment);
+        cloned_track.segments.shrink_to_fit();
 
         cloned_track
     }
@@ -126,13 +150,11 @@ impl<L> TrackSplitter<L> where L: Limit {
     /// writes the given tracks into new files
     ///
     fn write_tracks(&self, src_gpx: Gpx, tracks: Vec<Track>) -> Result<usize, Error> {
-        let len = tracks.len();
-
         for (index, track) in tracks.iter().enumerate() {
             self.write_track(&src_gpx, track, index)?;
         }
 
-        Ok(len)
+        Ok(tracks.len())
     }
 
     /// writes a single track into a file, counter is the suffix for the file name
@@ -142,6 +164,7 @@ impl<L> TrackSplitter<L> where L: Limit {
         let mut gpx = src_gpx.clone();
         gpx.tracks.clear();
         gpx.tracks.push(track.to_owned());
+        gpx.tracks.shrink_to_fit();
 
         let path = io::create_path(&self.path, counter)?;
         io::write_gpx(gpx, path)
@@ -151,24 +174,61 @@ impl<L> TrackSplitter<L> where L: Limit {
 //--------------------------------------------------------------
 
 #[test]
-fn test_split_route_zero() {
+fn test_split_route_0() {
     let route = Route::new();
-
     let lim = crate::limit::PointsLimit::new(0);
     let split = RouteSplitter::new("".to_string(), lim);
-    let tracks = split.spilt_routes(&vec![route]);
-    assert_eq!(0, tracks.len());
+
+    let routes = split.spilt_routes(&vec![route]);
+
+    assert_eq!(0, routes.len());
+}
+
+#[test]
+fn test_split_route_2() {
+    let mut route = Route::new();
+    for i in 0..4 {
+        let mut point = Waypoint::default();
+        point.name = Some(format!("point {}", i));
+        route.points.push(point);
+    }
+    let lim = crate::limit::PointsLimit::new(2);
+    let split = RouteSplitter::new("".to_string(), lim);
+
+    let routes = split.spilt_routes(&vec![route]);
+
+    assert_eq!(3, routes.len());
+    let first_points = routes.first()
+        .and_then(|r| Some(r.points.clone())).unwrap();
+    let middle_points = routes.get(1)
+        .and_then(|r| Some(r.points.clone())).unwrap();
+    let last_points = routes.last()
+        .and_then(|r| Some(r.points.clone())).unwrap();
+    assert_eq!(2, first_points.len());
+    assert_eq!(2, middle_points.len());
+    assert_eq!(2, last_points.len());
+
+    //first route from 0 to 1
+    assert_eq!("point 0", first_points.first().and_then(|p| p.name.clone()).unwrap());
+    assert_eq!("point 1", first_points.last().and_then(|p| p.name.clone()).unwrap());
+    //second route from 1 to 2
+    assert_eq!("point 1", middle_points.first().and_then(|p| p.name.clone()).unwrap());
+    assert_eq!("point 2", middle_points.last().and_then(|p| p.name.clone()).unwrap());
+    //third route from 2 to 3
+    assert_eq!("point 2", last_points.first().and_then(|p| p.name.clone()).unwrap());
+    assert_eq!("point 3", last_points.last().and_then(|p| p.name.clone()).unwrap());
 }
 
 //--------------------------------------------------------------
 
 #[test]
-fn test_split_track_zero() {
+fn test_split_track_0() {
     let track = Track::new();
-
     let lim = crate::limit::PointsLimit::new(0);
     let split = TrackSplitter::new("".to_string(), lim);
+
     let tracks = split.spilt_tracks(&vec![track]);
+
     assert_eq!(0, tracks.len());
 }
 
@@ -184,6 +244,7 @@ fn test_split_track_2() {
     track.segments.push(segment);
     let lim = crate::limit::PointsLimit::new(2);
     let split = TrackSplitter::new("".to_string(), lim);
+
     let tracks = split.spilt_tracks(&vec![track]);
 
     //expect 2 tracks with 1 segment each containing 2 points
