@@ -4,22 +4,35 @@ use gpx::{Gpx, Track, TrackSegment, Waypoint, Route};
 use crate::limit::Limit;
 use crate::io;
 
+pub trait Splitter {
+    fn split(&self) -> Result<usize, Error>;
+}
 
 pub struct RouteSplitter <L> {
     path: String,
     limit: L,
 }
 
-impl<L> RouteSplitter<L> where L: Limit {
+pub struct TrackSplitter<L> {
+    path: String,
+    limit: L,
+}
 
-    pub fn new(path: String, limit: L) -> Self {
-        RouteSplitter { path, limit }
-    }
+//--------------------------------------------------------------
 
-    pub fn split(&self) -> Result<usize, Error> {
+impl<L>Splitter for RouteSplitter<L> where L: Limit {
+
+    fn split(&self) -> Result<usize, Error> {
         let gpx = io::read_gpx(self.path.as_str())?;
         let routes = self.spilt_routes(&gpx.routes);
         self.write_routes(gpx, &routes)
+    }
+}
+
+impl<L>RouteSplitter<L> where L: Limit {
+
+    pub fn new(path: String, limit: L) -> Self {
+        RouteSplitter { path, limit }
     }
 
     fn spilt_routes(&self, routes: &Vec<Route>) -> Vec<Route> {
@@ -83,21 +96,19 @@ impl<L> RouteSplitter<L> where L: Limit {
 }
 
 //--------------------------------------------------------------
-pub struct TrackSplitter<L> {
-    path: String,
-    limit: L,
+
+impl<L>Splitter for TrackSplitter<L> where L: Limit {
+    fn split(&self) -> Result<usize, Error> {
+        let gpx = io::read_gpx(self.path.as_str())?;
+        let tracks = self.spilt_tracks(&gpx.tracks);
+        self.write_tracks(gpx, tracks)
+    }
 }
 
 impl<L> TrackSplitter<L> where L: Limit {
 
     pub fn new(path: String, limit: L) -> Self {
         TrackSplitter { path, limit }
-    }
-
-    pub fn split(&self) -> Result<usize, Error> {
-        let gpx = io::read_gpx(self.path.as_str())?;
-        let tracks = self.spilt_tracks(&gpx.tracks);
-        self.write_tracks(gpx, tracks)
     }
 
     /// splits the given tracks into new tracks where the number of points of that tracks are limted

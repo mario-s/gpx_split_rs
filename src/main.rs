@@ -1,7 +1,7 @@
 //import
 use clap::{Parser, ValueEnum};
 
-use gpx_split::split::TrackSplitter;
+use gpx_split::split::{Splitter, TrackSplitter};
 use gpx_split::limit::{Limit, LengthLimit, PointsLimit};
 
 
@@ -43,5 +43,8 @@ fn main() {
 
 fn execute<L>(path: String, limit: L) where L: Limit + Clone {
     let s = TrackSplitter::new(path, limit);
-    s.split().expect("failed to spilt file!");
+    //cast as a trait object &dyn Splitter
+    let s_trait = &s as &dyn Splitter;
+    //in order to call split method
+    s_trait.split().expect("failed to spilt file!");
 }
