@@ -15,14 +15,26 @@ struct Arguments {
     /// track will be split when the maximum is exceeded, points or length in Meter
     #[arg(short, long, value_name="MAXIMUM", default_value_t = 500)]
     max: u32,
+    /// split either routes or the tracks in the GPX file
+    #[arg(short, long, value_enum, default_value_t=Trace::Track)]
+    trace: Trace,
     /// split the track by number of points, or by length in Meter
-    #[arg(short, long, value_enum, default_value_t=SplitType::Point)]
-    split_type: SplitType,
+    #[arg(short, long, value_enum, default_value_t=By::Point)]
+    by: By,
+}
+
+/// what to split in the gpx file
+#[derive(ValueEnum, Clone)]
+enum Trace {
+    /// split the routes
+    Route,
+    /// split the tracks
+    Track,
 }
 
 /// splitting occurs when one of the maximum values is reached
 #[derive(ValueEnum, Clone)]
-enum SplitType {
+enum By {
     /// split by number of points
     Point,
     /// split by length of track
@@ -32,16 +44,16 @@ enum SplitType {
 fn main() {
     let args = Arguments::parse();
     let path = args.path;
-    let split = args.split_type;
+    let by = args.by;
     let max = args.max;
 
-    match split {
-        SplitType::Len => build_and_run(path, LengthLimit::new(max)),
-        SplitType::Point => build_and_run(path, PointsLimit::new(max)),
+    match by {
+        By::Len => build_and_run(path, LengthLimit::new(max)),
+        By::Point => build_and_run(path, PointsLimit::new(max)),
     }
 }
 
-fn build_and_run<L>(path: String, limit: L) where L: Limit + Clone {
+fn build_and_run<L: Limit + Clone>(path: String, limit: L) {
     let s = TrackSplitter::new(path, limit);
     run(s).expect("failed to spilt file!");
 }
