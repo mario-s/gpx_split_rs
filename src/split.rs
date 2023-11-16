@@ -23,15 +23,14 @@ impl<L> RouteSplitter<L> where L: Limit {
     }
 
     fn spilt_routes(&self, routes: &Vec<Route>) -> Vec<Route> {
-        let mut new_routes = Vec::new();
-        let mut points = Vec::new();
+        let mut new_routes = vec![];
+        let mut points = vec![];
         for route in routes {
             route.points.iter().for_each(|point| {
                 points.push(point.clone());
 
                 if self.limit.exceeds_limit(&points) {
-                    //TODO clone route
-                    let new_route = Route::new();
+                    let new_route = self.clone_route(route, &mut points);
                     new_routes.push(new_route);
 
                     points.clear();
@@ -42,6 +41,13 @@ impl<L> RouteSplitter<L> where L: Limit {
         }
 
         new_routes
+    }
+
+    fn clone_route(&self, src_route: &Route, points: &mut Vec<Waypoint>) -> Route {
+        let mut cloned_route = src_route.clone();
+        cloned_route.points.clear();
+        cloned_route.points.append(points);
+        cloned_route
     }
 }
 
@@ -66,8 +72,8 @@ impl<L> TrackSplitter<L> where L: Limit {
     /// splits the given tracks into new tracks where the number of points of that tracks are limted
     ///
     fn spilt_tracks(&self, tracks: &Vec<Track>) -> Vec<Track> {
-        let mut new_tracks = Vec::new();
-        let mut points = Vec::new();
+        let mut new_tracks = vec![];
+        let mut points = vec![];
         for track in tracks {
             track.segments.iter()
             .flat_map(|segment| segment.points.iter().cloned())
