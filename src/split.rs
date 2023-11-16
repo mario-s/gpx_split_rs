@@ -39,6 +39,14 @@ impl<L> RouteSplitter<L> where L: Limit {
                 }
             });
         }
+        //this condition will be true in most cases
+        //but it can happen that we split at the end of a route, in this case we have only one point
+        if points.len() > 1 {
+            if let Some(last) = routes.last() {
+                let new_route = self.clone_route(last, &mut points);
+                new_routes.push(new_route);
+            }
+        }
 
         new_routes
     }
@@ -92,7 +100,7 @@ impl<L> TrackSplitter<L> where L: Limit {
             });
         }
         //this condition will be true in most cases
-        //but it can happen that we split at the end of track, in this case we have only one point
+        //but it can happen that we split at the end of a track, in this case we have only one point
         if points.len() > 1 {
             if let Some(last) = tracks.last() {
                 let new_track = self.clone_track(last, &points);
@@ -138,6 +146,18 @@ impl<L> TrackSplitter<L> where L: Limit {
         let path = io::create_path(&self.path, counter)?;
         io::write_gpx(gpx, path)
     }
+}
+
+//--------------------------------------------------------------
+
+#[test]
+fn test_split_route_zero() {
+    let route = Route::new();
+
+    let lim = crate::limit::PointsLimit::new(0);
+    let split = RouteSplitter::new("".to_string(), lim);
+    let tracks = split.spilt_routes(&vec![route]);
+    assert_eq!(0, tracks.len());
 }
 
 //--------------------------------------------------------------
@@ -191,14 +211,4 @@ fn test_split_track_2() {
     //third track from 2 to 3
     assert_eq!("point 2", last_points.first().and_then(|p| p.name.clone()).unwrap());
     assert_eq!("point 3", last_points.last().and_then(|p| p.name.clone()).unwrap());
-}
-
-#[test]
-fn test_split_route_zero() {
-    let route = Route::new();
-
-    let lim = crate::limit::PointsLimit::new(0);
-    let split = RouteSplitter::new("".to_string(), lim);
-    let tracks = split.spilt_routes(&vec![route]);
-    assert_eq!(0, tracks.len());
 }
