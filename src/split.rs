@@ -173,96 +173,103 @@ impl<L> TrackSplitter<L> where L: Limit {
 
 //--------------------------------------------------------------
 
-#[test]
-fn test_split_route_0() {
-    let route = Route::new();
-    let lim = crate::limit::PointsLimit::new(0);
-    let split = RouteSplitter::new("".to_string(), lim);
-
-    let routes = split.spilt_routes(&vec![route]);
-
-    assert_eq!(0, routes.len());
-}
-
-#[test]
-fn test_split_route_2() {
-    let mut route = Route::new();
-    for i in 0..4 {
-        let mut point = Waypoint::default();
-        point.name = Some(format!("point {}", i));
-        route.points.push(point);
-    }
-    let lim = crate::limit::PointsLimit::new(2);
-    let split = RouteSplitter::new("".to_string(), lim);
-
-    let routes = split.spilt_routes(&vec![route]);
-
-    assert_eq!(3, routes.len());
-    let first_points = routes.first()
-        .and_then(|r| Some(r.points.clone())).unwrap();
-    let middle_points = routes.get(1)
-        .and_then(|r| Some(r.points.clone())).unwrap();
-    let last_points = routes.last()
-        .and_then(|r| Some(r.points.clone())).unwrap();
-    assert_points(first_points, middle_points, last_points);
-}
-
-//--------------------------------------------------------------
-
-#[test]
-fn test_split_track_0() {
-    let track = Track::new();
-    let lim = crate::limit::PointsLimit::new(0);
-    let split = TrackSplitter::new("".to_string(), lim);
-
-    let tracks = split.spilt_tracks(&vec![track]);
-
-    assert_eq!(0, tracks.len());
-}
-
-#[test]
-fn test_split_track_2() {
-    let mut segment = TrackSegment::new();
-    for i in 0..4 {
-        let mut point = Waypoint::default();
-        point.name = Some(format!("point {}", i));
-        segment.points.push(point);
-    }
-    let mut track = Track::new();
-    track.segments.push(segment);
-    let lim = crate::limit::PointsLimit::new(2);
-    let split = TrackSplitter::new("".to_string(), lim);
-
-    let tracks = split.spilt_tracks(&vec![track]);
-
-    //expect 2 tracks with 1 segment each containing 2 points
-    assert_eq!(3, tracks.len());
-
-    let first_points = tracks.first()
-        .and_then(|t| t.segments.first())
-        .and_then(|s| Some(s.points.clone())).unwrap();
-    let middle_points = tracks.get(1)
-        .and_then(|t| t.segments.first())
-        .and_then(|s| Some(s.points.clone())).unwrap();
-    let last_points = tracks.last()
-        .and_then(|t| t.segments.first())
-        .and_then(|s| Some(s.points.clone())).unwrap();
-    assert_points(first_points, middle_points, last_points);
-}
-
 #[cfg(test)]
-fn assert_points(first_points: Vec<Waypoint>, middle_points: Vec<Waypoint>, last_points: Vec<Waypoint>) {
-    assert_eq!(2, first_points.len());
-    assert_eq!(2, middle_points.len());
-    assert_eq!(2, last_points.len());
+mod tests {
+    use gpx::{Track, TrackSegment, Waypoint, Route};
+    use crate::limit::PointsLimit;
+    use crate::split::{RouteSplitter, TrackSplitter};
 
-    //first from 0 to 1
-    assert_eq!("point 0", first_points.first().and_then(|p| p.name.clone()).unwrap());
-    assert_eq!("point 1", first_points.last().and_then(|p| p.name.clone()).unwrap());
-    //second from 1 to 2
-    assert_eq!("point 1", middle_points.first().and_then(|p| p.name.clone()).unwrap());
-    assert_eq!("point 2", middle_points.last().and_then(|p| p.name.clone()).unwrap());
-    //third from 2 to 3
-    assert_eq!("point 2", last_points.first().and_then(|p| p.name.clone()).unwrap());
-    assert_eq!("point 3", last_points.last().and_then(|p| p.name.clone()).unwrap());
+    #[test]
+    fn test_split_route_0() {
+        let route = Route::new();
+        let lim = PointsLimit::new(0);
+        let split = RouteSplitter::new("".to_string(), lim);
+
+        let routes = split.spilt_routes(&vec![route]);
+
+        assert_eq!(0, routes.len());
+    }
+
+    #[test]
+    fn test_split_route_2() {
+        let mut route = Route::new();
+        for i in 0..4 {
+            let mut point = Waypoint::default();
+            point.name = Some(format!("point {}", i));
+            route.points.push(point);
+        }
+        let lim = PointsLimit::new(2);
+        let split = RouteSplitter::new("".to_string(), lim);
+
+        let routes = split.spilt_routes(&vec![route]);
+
+        assert_eq!(3, routes.len());
+        let first_points = routes.first()
+            .and_then(|r| Some(r.points.clone())).unwrap();
+        let middle_points = routes.get(1)
+            .and_then(|r| Some(r.points.clone())).unwrap();
+        let last_points = routes.last()
+            .and_then(|r| Some(r.points.clone())).unwrap();
+        assert_points(first_points, middle_points, last_points);
+    }
+
+    //--------------------------------------------------------------
+
+    #[test]
+    fn test_split_track_0() {
+        let track = Track::new();
+        let lim = PointsLimit::new(0);
+        let split = TrackSplitter::new("".to_string(), lim);
+
+        let tracks = split.spilt_tracks(&vec![track]);
+
+        assert_eq!(0, tracks.len());
+    }
+
+    #[test]
+    fn test_split_track_2() {
+        let mut segment = TrackSegment::new();
+        for i in 0..4 {
+            let mut point = Waypoint::default();
+            point.name = Some(format!("point {}", i));
+            segment.points.push(point);
+        }
+        let mut track = Track::new();
+        track.segments.push(segment);
+        let lim = PointsLimit::new(2);
+        let split = TrackSplitter::new("".to_string(), lim);
+
+        let tracks = split.spilt_tracks(&vec![track]);
+
+        //expect 2 tracks with 1 segment each containing 2 points
+        assert_eq!(3, tracks.len());
+
+        let first_points = tracks.first()
+            .and_then(|t| t.segments.first())
+            .and_then(|s| Some(s.points.clone())).unwrap();
+        let middle_points = tracks.get(1)
+            .and_then(|t| t.segments.first())
+            .and_then(|s| Some(s.points.clone())).unwrap();
+        let last_points = tracks.last()
+            .and_then(|t| t.segments.first())
+            .and_then(|s| Some(s.points.clone())).unwrap();
+        assert_points(first_points, middle_points, last_points);
+    }
+
+
+    fn assert_points(first_points: Vec<Waypoint>, middle_points: Vec<Waypoint>, last_points: Vec<Waypoint>) {
+        assert_eq!(2, first_points.len());
+        assert_eq!(2, middle_points.len());
+        assert_eq!(2, last_points.len());
+
+        //first from 0 to 1
+        assert_eq!("point 0", first_points.first().and_then(|p| p.name.clone()).unwrap());
+        assert_eq!("point 1", first_points.last().and_then(|p| p.name.clone()).unwrap());
+        //second from 1 to 2
+        assert_eq!("point 1", middle_points.first().and_then(|p| p.name.clone()).unwrap());
+        assert_eq!("point 2", middle_points.last().and_then(|p| p.name.clone()).unwrap());
+        //third from 2 to 3
+        assert_eq!("point 2", last_points.first().and_then(|p| p.name.clone()).unwrap());
+        assert_eq!("point 3", last_points.last().and_then(|p| p.name.clone()).unwrap());
+    }
 }
