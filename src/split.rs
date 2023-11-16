@@ -204,19 +204,7 @@ fn test_split_route_2() {
         .and_then(|r| Some(r.points.clone())).unwrap();
     let last_points = routes.last()
         .and_then(|r| Some(r.points.clone())).unwrap();
-    assert_eq!(2, first_points.len());
-    assert_eq!(2, middle_points.len());
-    assert_eq!(2, last_points.len());
-
-    //first route from 0 to 1
-    assert_eq!("point 0", first_points.first().and_then(|p| p.name.clone()).unwrap());
-    assert_eq!("point 1", first_points.last().and_then(|p| p.name.clone()).unwrap());
-    //second route from 1 to 2
-    assert_eq!("point 1", middle_points.first().and_then(|p| p.name.clone()).unwrap());
-    assert_eq!("point 2", middle_points.last().and_then(|p| p.name.clone()).unwrap());
-    //third route from 2 to 3
-    assert_eq!("point 2", last_points.first().and_then(|p| p.name.clone()).unwrap());
-    assert_eq!("point 3", last_points.last().and_then(|p| p.name.clone()).unwrap());
+    assert_points(first_points, middle_points, last_points);
 }
 
 //--------------------------------------------------------------
@@ -259,17 +247,22 @@ fn test_split_track_2() {
     let last_points = tracks.last()
         .and_then(|t| t.segments.first())
         .and_then(|s| Some(s.points.clone())).unwrap();
+    assert_points(first_points, middle_points, last_points);
+}
+
+#[cfg(test)]
+fn assert_points(first_points: Vec<Waypoint>, middle_points: Vec<Waypoint>, last_points: Vec<Waypoint>) {
     assert_eq!(2, first_points.len());
     assert_eq!(2, middle_points.len());
     assert_eq!(2, last_points.len());
 
-    //first track from 0 to 1
+    //first from 0 to 1
     assert_eq!("point 0", first_points.first().and_then(|p| p.name.clone()).unwrap());
     assert_eq!("point 1", first_points.last().and_then(|p| p.name.clone()).unwrap());
-    //second track from 1 to 2
+    //second from 1 to 2
     assert_eq!("point 1", middle_points.first().and_then(|p| p.name.clone()).unwrap());
     assert_eq!("point 2", middle_points.last().and_then(|p| p.name.clone()).unwrap());
-    //third track from 2 to 3
+    //third from 2 to 3
     assert_eq!("point 2", last_points.first().and_then(|p| p.name.clone()).unwrap());
     assert_eq!("point 3", last_points.last().and_then(|p| p.name.clone()).unwrap());
 }
