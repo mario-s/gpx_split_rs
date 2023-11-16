@@ -8,19 +8,19 @@ pub trait Splitter {
     fn split(&self) -> Result<usize, Error>;
 }
 
-pub struct RouteSplitter <L> {
+pub struct RouteSplitter<L: Limit> {
     path: String,
     limit: L,
 }
 
-pub struct TrackSplitter<L> {
+pub struct TrackSplitter<L: Limit> {
     path: String,
     limit: L,
 }
 
 //--------------------------------------------------------------
 
-impl<L>Splitter for RouteSplitter<L> where L: Limit {
+impl<L: Limit>Splitter for RouteSplitter<L> {
 
     fn split(&self) -> Result<usize, Error> {
         let gpx = io::read_gpx(self.path.as_str())?;
@@ -29,7 +29,7 @@ impl<L>Splitter for RouteSplitter<L> where L: Limit {
     }
 }
 
-impl<L>RouteSplitter<L> where L: Limit {
+impl<L: Limit>RouteSplitter<L> {
 
     pub fn new(path: String, limit: L) -> Self {
         RouteSplitter { path, limit }
@@ -97,7 +97,7 @@ impl<L>RouteSplitter<L> where L: Limit {
 
 //--------------------------------------------------------------
 
-impl<L>Splitter for TrackSplitter<L> where L: Limit {
+impl<L: Limit>Splitter for TrackSplitter<L> {
     fn split(&self) -> Result<usize, Error> {
         let gpx = io::read_gpx(self.path.as_str())?;
         let tracks = self.spilt_tracks(&gpx.tracks);
@@ -105,7 +105,7 @@ impl<L>Splitter for TrackSplitter<L> where L: Limit {
     }
 }
 
-impl<L> TrackSplitter<L> where L: Limit {
+impl<L: Limit> TrackSplitter<L> {
 
     pub fn new(path: String, limit: L) -> Self {
         TrackSplitter { path, limit }

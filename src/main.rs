@@ -1,4 +1,4 @@
-//import
+use std::io::Error;
 use clap::{Parser, ValueEnum};
 
 use gpx_split::split::{Splitter, TrackSplitter};
@@ -36,15 +36,16 @@ fn main() {
     let max = args.max;
 
     match split {
-        SplitType::Len => execute(path, LengthLimit::new(max)),
-        SplitType::Point => execute(path, PointsLimit::new(max)),
+        SplitType::Len => build_and_run(path, LengthLimit::new(max)),
+        SplitType::Point => build_and_run(path, PointsLimit::new(max)),
     }
 }
 
-fn execute<L>(path: String, limit: L) where L: Limit + Clone {
+fn build_and_run<L>(path: String, limit: L) where L: Limit + Clone {
     let s = TrackSplitter::new(path, limit);
-    //cast as a trait object &dyn Splitter
-    let s_trait = &s as &dyn Splitter;
-    //in order to call split method
-    s_trait.split().expect("failed to spilt file!");
+    run(s).expect("failed to spilt file!");
+}
+
+fn run<T: Splitter>(splitter: T) -> Result<usize, Error> {
+    splitter.split()
 }

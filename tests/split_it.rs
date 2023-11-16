@@ -6,9 +6,8 @@ fn test_length() {
     let s = TrackSplitter::new(
         "target/debug/test_l.gpx".to_string(),
         LengthLimit::new(1000));
-    let s_trait = &s as &dyn Splitter;
-    let res = s_trait.split().unwrap();
-    assert_eq!(3, res)
+
+    assert_splitted(s, 3)
 }
 
 #[test]
@@ -16,7 +15,10 @@ fn test_points() {
     let s = TrackSplitter::new(
         "target/debug/test_p.gpx".to_string(),
         PointsLimit::new(50));
-    let s_trait = &s as &dyn Splitter;
-    let res = s_trait.split().unwrap();
-    assert_eq!(2, res)
+    assert_splitted(s, 2)
+}
+
+fn assert_splitted<T: Splitter>(splitter: T, size: usize) {
+    let res = splitter.split().unwrap();
+    assert_eq!(size, res)
 }
