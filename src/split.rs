@@ -199,19 +199,18 @@ mod tests {
         assert_eq!(0, routes.len());
     }
 
-    fn new_route_splitter(max: u32) -> RouteSplitter {
-        let lim = Box::new(PointsLimit::new(max));
-        RouteSplitter::new("".to_string(), lim)
+    #[test]
+    fn test_split_route_1() {
+        let route = new_route(4);
+
+        let routes = new_route_splitter(4).spilt_routes(&vec![route]);
+
+        assert_eq!(1, routes.len());
     }
 
     #[test]
     fn test_split_route_3() {
-        let mut route = Route::new();
-        for i in 0..4 {
-            let mut point = Waypoint::default();
-            point.name = Some(format!("point {}", i));
-            route.points.push(point);
-        }
+        let route = new_route(4);
 
         let routes = new_route_splitter(2).spilt_routes(&vec![route]);
 
@@ -223,6 +222,21 @@ mod tests {
         let last_points = routes.last()
             .and_then(|r| Some(r.points.clone())).unwrap();
         assert_points(first_points, middle_points, last_points);
+    }
+
+    fn new_route(num_points: u32) -> Route {
+        let mut route = Route::new();
+        for i in 0..num_points {
+            let mut point = Waypoint::default();
+            point.name = Some(format!("point {}", i));
+            route.points.push(point);
+        }
+        return route;
+    }
+
+    fn new_route_splitter(max: u32) -> RouteSplitter {
+        let lim = Box::new(PointsLimit::new(max));
+        RouteSplitter::new("".to_string(), lim)
     }
 
     //--------------------------------------------------------------
@@ -237,15 +251,17 @@ mod tests {
     }
 
     #[test]
+    fn test_split_track_1() {
+        let track = new_track(4);
+
+        let tracks = new_track_splitter(4).spilt_tracks(&vec![track]);
+
+        assert_eq!(1, tracks.len());
+    }
+
+    #[test]
     fn test_split_track_3() {
-        let mut segment = TrackSegment::new();
-        for i in 0..4 {
-            let mut point = Waypoint::default();
-            point.name = Some(format!("point {}", i));
-            segment.points.push(point);
-        }
-        let mut track = Track::new();
-        track.segments.push(segment);
+        let track = new_track(4);
 
         let tracks = new_track_splitter(2).spilt_tracks(&vec![track]);
 
@@ -262,6 +278,18 @@ mod tests {
             .and_then(|t| t.segments.first())
             .and_then(|s| Some(s.points.clone())).unwrap();
         assert_points(first_points, middle_points, last_points);
+    }
+
+    fn new_track(num_points: u32) -> Track {
+        let mut segment = TrackSegment::new();
+        for i in 0..num_points {
+            let mut point = Waypoint::default();
+            point.name = Some(format!("point {}", i));
+            segment.points.push(point);
+        }
+        let mut track = Track::new();
+        track.segments.push(segment);
+        return track;
     }
 
     fn new_track_splitter(max: u32) -> TrackSplitter {
