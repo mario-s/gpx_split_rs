@@ -6,7 +6,7 @@ use haversine_rs::distance_vec;
 
 /// Calculates the distance of all waypoints in the track.
 /// Returns result in Meter.
-pub fn distance_points(way_points: Vec<Waypoint>) -> f64 {
+pub fn distance_points(way_points: &Vec<Waypoint>) -> f64 {
     distance(collect_points(way_points))
 }
 
@@ -17,7 +17,7 @@ fn distance(points: Vec<Point>) -> f64 {
     distance_vec(points, Unit::Meters)
 }
 
-pub fn fit_bounds(mut gpx: Gpx, way_points: Vec<Waypoint>) -> Gpx {
+pub fn fit_bounds(mut gpx: Gpx, way_points: &Vec<Waypoint>) -> Gpx {
     if let Some(existing) = gpx.metadata {
         let mut m = existing.clone();
         if let Some(_) = m.bounds {
@@ -28,7 +28,7 @@ pub fn fit_bounds(mut gpx: Gpx, way_points: Vec<Waypoint>) -> Gpx {
     gpx
 }
 
-fn find_bounds(way_points: Vec<Waypoint>) -> Option<Rect<f64>> {
+fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
     if way_points.is_empty() {
         return None;
     }
@@ -44,7 +44,7 @@ fn find_bounds(way_points: Vec<Waypoint>) -> Option<Rect<f64>> {
     ))
 }
 
-fn collect_points(way_points: Vec<Waypoint>) -> Vec<Point> {
+fn collect_points(way_points: &Vec<Waypoint>) -> Vec<Point> {
     way_points.iter().map(|p| p.point()).map(|p| Point::new(p.x(), p.y())).collect()
 }
 
@@ -76,7 +76,7 @@ mod tests {
         let mut gpx = Gpx::default();
         gpx.metadata = Some(meta);
 
-        let res = fit_bounds(gpx, vec![]);
+        let res = fit_bounds(gpx, &vec![]);
         assert_eq!(None, res.metadata.and_then(|m| m.bounds))
     }
 
@@ -85,7 +85,7 @@ mod tests {
         let point_0 = GeoPoint::new(40.7767644, -73.9761399);
         let point_1 = GeoPoint::new(40.771209, -73.9673991);
         let points = vec![Waypoint::new(point_0), Waypoint::new(point_1)];
-        let rect = find_bounds(points).unwrap();
+        let rect = find_bounds(&points).unwrap();
         assert_eq!(40.771209, rect.min().x);
         assert_eq!(-73.9761399, rect.min().y);
         assert_eq!(40.7767644, rect.max().x);

@@ -87,7 +87,7 @@ impl RouteSplitter {
     ///
     fn write_route(&self, src_gpx: &Gpx, route: &Route, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
-        let mut gpx = fit_bounds(src_gpx.clone(), route.points.clone());
+        let mut gpx = fit_bounds(src_gpx.clone(), &route.points);
         gpx.routes.clear();
         gpx.routes.push(route.to_owned());
 
@@ -173,7 +173,7 @@ impl TrackSplitter {
     fn write_track(&self, src_gpx: &Gpx, track: &Track, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
         let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
-        let mut gpx = fit_bounds(src_gpx.clone(), points);
+        let mut gpx = fit_bounds(src_gpx.clone(), &points);
         gpx.tracks.clear();
         gpx.tracks.push(track.to_owned());
         gpx.tracks.shrink_to_fit();

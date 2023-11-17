@@ -5,7 +5,7 @@ use crate::geo;
 
 /// checks if the points exceed a defined limit.
 pub trait Limit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool;
+    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool;
 }
 
 //-------------------------------------------------
@@ -24,7 +24,7 @@ impl PointsLimit {
 }
 
 impl Limit for PointsLimit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
+    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool {
         points.len() >= self.max_points.try_into().unwrap()
     }
 }
@@ -45,7 +45,7 @@ impl LengthLimit {
 }
 
 impl Limit for LengthLimit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
-        geo::distance_points(points.to_owned()) > self.max_length.into()
+    fn exceeds_limit(&self, points: &Vec<Waypoint>) -> bool {
+        geo::distance_points(&points) > self.max_length.into()
     }
 }
