@@ -1,0 +1,567 @@
+<?xml version="1.0"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:gpxtrx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:trp="http://www.garmin.com/xmlschemas/TripExtensions/v1" xmlns:adv="http://www.garmin.com/xmlschemas/AdventuresExtensions/v1" xmlns:prs="http://www.garmin.com/xmlschemas/PressureExtension/v1" xmlns:tmd="http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1" xmlns:vptm="http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1" xmlns:ctx="http://www.garmin.com/xmlschemas/CreationTimeExtension/v1" xmlns:gpxacc="http://www.garmin.com/xmlschemas/AccelerationExtension/v1" xmlns:gpxpx="http://www.garmin.com/xmlschemas/PowerExtension/v1" xmlns:vidx1="http://www.garmin.com/xmlschemas/VideoExtension/v1" creator="Garmin Desktop App" version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/ActivityExtension/v1 http://www8.garmin.com/xmlschemas/ActivityExtensionv1.xsd http://www.garmin.com/xmlschemas/AdventuresExtensions/v1 http://www8.garmin.com/xmlschemas/AdventuresExtensionv1.xsd http://www.garmin.com/xmlschemas/PressureExtension/v1 http://www.garmin.com/xmlschemas/PressureExtensionv1.xsd http://www.garmin.com/xmlschemas/TripExtensions/v1 http://www.garmin.com/xmlschemas/TripExtensionsv1.xsd http://www.garmin.com/xmlschemas/TripMetaDataExtensions/v1 http://www.garmin.com/xmlschemas/TripMetaDataExtensionsv1.xsd http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensions/v1 http://www.garmin.com/xmlschemas/ViaPointTransportationModeExtensionsv1.xsd http://www.garmin.com/xmlschemas/CreationTimeExtension/v1 http://www.garmin.com/xmlschemas/CreationTimeExtensionsv1.xsd http://www.garmin.com/xmlschemas/AccelerationExtension/v1 http://www.garmin.com/xmlschemas/AccelerationExtensionv1.xsd http://www.garmin.com/xmlschemas/PowerExtension/v1 http://www.garmin.com/xmlschemas/PowerExtensionv1.xsd http://www.garmin.com/xmlschemas/VideoExtension/v1 http://www.garmin.com/xmlschemas/VideoExtensionv1.xsd">
+  <metadata>
+    <link href="http://www.garmin.com">
+      <text>Garmin International</text>
+    </link>
+    <time>2023-11-17T17:26:53Z</time>
+    <bounds maxlat="27.896473361179233" maxlon="-15.5330222658813" minlat="27.879494978114963" minlon="-15.563949560746551"/>
+  </metadata>
+  <rte>
+    <name>04_Tirajana 1 bis 04_Tirajana 49</name>
+    <extensions>
+      <gpxx:RouteExtension>
+        <gpxx:IsAutoNamed>true</gpxx:IsAutoNamed>
+        <gpxx:DisplayColor>Magenta</gpxx:DisplayColor>
+      </gpxx:RouteExtension>
+      <trp:Trip>
+        <trp:TransportationMode>MountainBiking</trp:TransportationMode>
+      </trp:Trip>
+    </extensions>
+    <rtept lat="27.887307079508901" lon="-15.563949560746551">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 1</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ViaPoint>
+          <trp:CalculationMode>FasterTime</trp:CalculationMode>
+          <trp:ElevationMode>Standard</trp:ElevationMode>
+        </trp:ViaPoint>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.89074600674212" lon="-15.562667967751622">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 2</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.89049387909472" lon="-15.561408000066876">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 3</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.89289303123951" lon="-15.560497976839542">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 4</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.894642753526568" lon="-15.557205732911825">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 5</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.892918009310961" lon="-15.55733498185873">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 6</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.892206972464919" lon="-15.554992994293571">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 7</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.889541024342179" lon="-15.554202999919653">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 8</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.886325307190418" lon="-15.551185179501772">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 9</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.886035041883588" lon="-15.550101986154914">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 10</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.886538961902261" lon="-15.547632006928325">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 11</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.884618081152439" lon="-15.543456394225359">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 12</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.88071496412158" lon="-15.541077023372054">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 13</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.880855025723577" lon="-15.540216034278274">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 14</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.879494978114963" lon="-15.53849003277719">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 15</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.884363019838929" lon="-15.534042008221149">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 16</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.883969573304057" lon="-15.5330222658813">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 17</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.887489972636104" lon="-15.533301969990134">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 18</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.888335036113858" lon="-15.533069958910346">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 19</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.889748979359865" lon="-15.53473100066185">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 20</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.889001984149218" lon="-15.538537977263331">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 21</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.890065982937813" lon="-15.539561994373798">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 22</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.890870980918407" lon="-15.538779962807894">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 23</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.891184967011213" lon="-15.538826985284686">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 24</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.891878988593817" lon="-15.540446033701301">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 25</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.891939003020525" lon="-15.540704028680921">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 26</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.892297999933362" lon="-15.541773978620768">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 27</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.893875893205404" lon="-15.54138857871294">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 28</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.893344983458519" lon="-15.543281966820359">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 29</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.895538024604321" lon="-15.546386037021875">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 30</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.896473361179233" lon="-15.549488514661789">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 31</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.895306516438723" lon="-15.549858072772622">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 32</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.895799037069082" lon="-15.551256006583571">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 33</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.894172025844455" lon="-15.551540991291404">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 34</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.894644010812044" lon="-15.552324028685689">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 35</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.893527960404754" lon="-15.553300017490983">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 36</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.893307516351342" lon="-15.553408060222864">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 37</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.892206972464919" lon="-15.554992994293571">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 38</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.892043022438884" lon="-15.555772259831429">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 39</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.891934560611844" lon="-15.55592380464077">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 40</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.893461994826794" lon="-15.557189974933863">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 41</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.894642753526568" lon="-15.557205732911825">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 42</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.89338898845017" lon="-15.559965977445245">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 43</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.892726566642523" lon="-15.559675209224224">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 44</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.892639981582761" lon="-15.561463991180062">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 45</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.89049387909472" lon="-15.561408000066876">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 46</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.89074600674212" lon="-15.562667967751622">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 47</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.887491900473833" lon="-15.563712939620018">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 48</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ShapingPoint/>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+    <rtept lat="27.887307079508901" lon="-15.563949560746551">
+      <time>2023-11-17T17:26:15Z</time>
+      <name>04_Tirajana 49</name>
+      <sym>Waypoint</sym>
+      <extensions>
+        <trp:ViaPoint>
+          <trp:CalculationMode>FasterTime</trp:CalculationMode>
+          <trp:ElevationMode>Standard</trp:ElevationMode>
+        </trp:ViaPoint>
+        <gpxx:RoutePointExtension>
+          <gpxx:Subclass>000000000000FFFFFFFFFFFFFFFFFFFFFFFF</gpxx:Subclass>
+        </gpxx:RoutePointExtension>
+      </extensions>
+    </rtept>
+  </rte>
+</gpx>

@@ -2,7 +2,8 @@ use std::io::Error;
 use gpx::{Gpx, Track, TrackSegment, Waypoint, Route};
 
 use crate::limit::Limit;
-use crate::io;
+use crate::io::{read_gpx, write_gpx, create_path};
+use crate::geo::adjust_bounds;
 
 pub trait Splitter {
     fn split(&self) -> Result<usize, Error>;
@@ -23,7 +24,7 @@ pub struct TrackSplitter {
 impl Splitter for RouteSplitter {
 
     fn split(&self) -> Result<usize, Error> {
-        let gpx = io::read_gpx(self.path.as_str())?;
+        let gpx = read_gpx(self.path.as_str())?;
         let routes = self.spilt_routes(&gpx.routes);
         self.write_routes(gpx, &routes)
     }
@@ -86,12 +87,12 @@ impl RouteSplitter {
     ///
     fn write_route(&self, src_gpx: &Gpx, route: &Route, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
-        let mut gpx = src_gpx.clone();
+        let mut gpx = adjust_bounds(src_gpx.clone());
         gpx.routes.clear();
         gpx.routes.push(route.to_owned());
 
-        let path = io::create_path(&self.path, counter)?;
-        io::write_gpx(gpx, path)
+        let path = create_path(&self.path, counter)?;
+        write_gpx(gpx, path)
     }
 }
 
@@ -99,7 +100,7 @@ impl RouteSplitter {
 
 impl Splitter for TrackSplitter {
     fn split(&self) -> Result<usize, Error> {
-        let gpx = io::read_gpx(self.path.as_str())?;
+        let gpx = read_gpx(self.path.as_str())?;
         let tracks = self.spilt_tracks(&gpx.tracks);
         self.write_tracks(gpx, tracks)
     }
@@ -172,13 +173,13 @@ impl TrackSplitter {
     ///
     fn write_track(&self, src_gpx: &Gpx, track: &Track, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
-        let mut gpx = src_gpx.clone();
+        let mut gpx = adjust_bounds(src_gpx.clone());
         gpx.tracks.clear();
         gpx.tracks.push(track.to_owned());
         gpx.tracks.shrink_to_fit();
 
-        let path = io::create_path(&self.path, counter)?;
-        io::write_gpx(gpx, path)
+        let path = create_path(&self.path, counter)?;
+        write_gpx(gpx, path)
     }
 }
 

@@ -240,6 +240,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "copy_to_output",
+ "geo-types",
  "gpx",
  "haversine-rs",
 ]
