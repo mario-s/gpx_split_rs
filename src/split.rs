@@ -205,7 +205,7 @@ mod tests {
     }
 
     #[test]
-    fn test_split_route_2() {
+    fn test_split_route_3() {
         let mut route = Route::new();
         for i in 0..4 {
             let mut point = Waypoint::default();
@@ -237,7 +237,7 @@ mod tests {
     }
 
     #[test]
-    fn test_split_track_2() {
+    fn test_split_track_3() {
         let mut segment = TrackSegment::new();
         for i in 0..4 {
             let mut point = Waypoint::default();
