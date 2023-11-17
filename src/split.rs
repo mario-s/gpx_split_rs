@@ -8,19 +8,19 @@ pub trait Splitter {
     fn split(&self) -> Result<usize, Error>;
 }
 
-pub struct RouteSplitter<L: Limit> {
+pub struct RouteSplitter {
     path: String,
-    limit: L,
+    limit: Box<dyn Limit>,
 }
 
-pub struct TrackSplitter<L: Limit> {
+pub struct TrackSplitter {
     path: String,
-    limit: L,
+    limit: Box<dyn Limit>,
 }
 
 //--------------------------------------------------------------
 
-impl<L: Limit>Splitter for RouteSplitter<L> {
+impl Splitter for RouteSplitter {
 
     fn split(&self) -> Result<usize, Error> {
         let gpx = io::read_gpx(self.path.as_str())?;
@@ -29,9 +29,9 @@ impl<L: Limit>Splitter for RouteSplitter<L> {
     }
 }
 
-impl<L: Limit>RouteSplitter<L> {
+impl RouteSplitter {
 
-    pub fn new(path: String, limit: L) -> Self {
+    pub fn new(path: String, limit: Box<dyn Limit>) -> Self {
         RouteSplitter { path, limit }
     }
 
@@ -97,7 +97,7 @@ impl<L: Limit>RouteSplitter<L> {
 
 //--------------------------------------------------------------
 
-impl<L: Limit>Splitter for TrackSplitter<L> {
+impl Splitter for TrackSplitter {
     fn split(&self) -> Result<usize, Error> {
         let gpx = io::read_gpx(self.path.as_str())?;
         let tracks = self.spilt_tracks(&gpx.tracks);
@@ -105,9 +105,9 @@ impl<L: Limit>Splitter for TrackSplitter<L> {
     }
 }
 
-impl<L: Limit> TrackSplitter<L> {
+impl TrackSplitter {
 
-    pub fn new(path: String, limit: L) -> Self {
+    pub fn new(path: String, limit: Box<dyn Limit>) -> Self {
         TrackSplitter { path, limit }
     }
 
@@ -193,12 +193,15 @@ mod tests {
     #[test]
     fn test_split_route_0() {
         let route = Route::new();
-        let lim = PointsLimit::new(0);
-        let split = RouteSplitter::new("".to_string(), lim);
 
-        let routes = split.spilt_routes(&vec![route]);
+        let routes = new_route_splitter(0).spilt_routes(&vec![route]);
 
         assert_eq!(0, routes.len());
+    }
+
+    fn new_route_splitter(max: u32) -> RouteSplitter {
+        let lim = Box::new(PointsLimit::new(max));
+        RouteSplitter::new("".to_string(), lim)
     }
 
     #[test]
@@ -209,10 +212,8 @@ mod tests {
             point.name = Some(format!("point {}", i));
             route.points.push(point);
         }
-        let lim = PointsLimit::new(2);
-        let split = RouteSplitter::new("".to_string(), lim);
 
-        let routes = split.spilt_routes(&vec![route]);
+        let routes = new_route_splitter(2).spilt_routes(&vec![route]);
 
         assert_eq!(3, routes.len());
         let first_points = routes.first()
@@ -229,10 +230,8 @@ mod tests {
     #[test]
     fn test_split_track_0() {
         let track = Track::new();
-        let lim = PointsLimit::new(0);
-        let split = TrackSplitter::new("".to_string(), lim);
 
-        let tracks = split.spilt_tracks(&vec![track]);
+        let tracks = new_track_splitter(0).spilt_tracks(&vec![track]);
 
         assert_eq!(0, tracks.len());
     }
@@ -247,10 +246,8 @@ mod tests {
         }
         let mut track = Track::new();
         track.segments.push(segment);
-        let lim = PointsLimit::new(2);
-        let split = TrackSplitter::new("".to_string(), lim);
 
-        let tracks = split.spilt_tracks(&vec![track]);
+        let tracks = new_track_splitter(2).spilt_tracks(&vec![track]);
 
         //expect 2 tracks with 1 segment each containing 2 points
         assert_eq!(3, tracks.len());
@@ -267,6 +264,10 @@ mod tests {
         assert_points(first_points, middle_points, last_points);
     }
 
+    fn new_track_splitter(max: u32) -> TrackSplitter {
+        let lim = Box::new(PointsLimit::new(max));
+        TrackSplitter::new("".to_string(), lim)
+    }
 
     fn assert_points(first_points: Vec<Waypoint>, middle_points: Vec<Waypoint>, last_points: Vec<Waypoint>) {
         assert_eq!(2, first_points.len());

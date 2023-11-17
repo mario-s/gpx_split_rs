@@ -1,8 +1,8 @@
 use std::io::Error;
 use clap::{Parser, ValueEnum};
 
-use gpx_split::split::{Splitter, TrackSplitter};
-use gpx_split::limit::{Limit, LengthLimit, PointsLimit};
+use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter};
+use gpx_split::limit::{LengthLimit, PointsLimit, Limit};
 
 
 /// program to split a GPX file
@@ -44,18 +44,23 @@ enum By {
 fn main() {
     let args = Arguments::parse();
     let path = args.path;
+    let trace = args.trace;
     let by = args.by;
     let max = args.max;
 
-    match by {
-        By::Len => build_and_run(path, LengthLimit::new(max)),
-        By::Point => build_and_run(path, PointsLimit::new(max)),
-    }
+    let limit = create_limit(max, by);
+    let res = match trace {
+        Trace::Route => run(RouteSplitter::new(path, limit)),
+        Trace::Track => run(TrackSplitter::new(path, limit)),
+    };
+    res.unwrap();
 }
 
-fn build_and_run<L: Limit + Clone>(path: String, limit: L) {
-    let s = TrackSplitter::new(path, limit);
-    run(s).expect("failed to spilt file!");
+fn create_limit(max: u32, by: By) -> Box<dyn Limit> {
+    match by {
+        By::Len => Box::new(LengthLimit::new(max)),
+        By::Point => Box::new(PointsLimit::new(max))
+    }
 }
 
 fn run<T: Splitter>(splitter: T) -> Result<usize, Error> {

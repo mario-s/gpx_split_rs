@@ -5,7 +5,7 @@ use gpx_split::limit::{LengthLimit, PointsLimit};
 fn test_length() {
     let s = TrackSplitter::new(
         "target/debug/test_l.gpx".to_string(),
-        LengthLimit::new(1000));
+        Box::new(LengthLimit::new(1000)));
 
     assert_splitted(s, 3)
 }
@@ -14,7 +14,7 @@ fn test_length() {
 fn test_points() {
     let s = TrackSplitter::new(
         "target/debug/test_p.gpx".to_string(),
-        PointsLimit::new(50));
+        Box::new(PointsLimit::new(50)));
     assert_splitted(s, 2)
 }
 
