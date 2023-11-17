@@ -17,28 +17,31 @@ fn distance(points: Vec<Point>) -> f64 {
     distance_vec(points, Unit::Meters)
 }
 
-pub fn adjust_bounds(mut gpx: Gpx) -> Gpx {
+pub fn fit_bounds(mut gpx: Gpx, way_points: Vec<Waypoint>) -> Gpx {
     if let Some(existing) = gpx.metadata {
         let mut m = existing.clone();
         if let Some(_) = m.bounds {
-            //TODO find bounding box for collection of points
-            m.bounds = None;
+            m.bounds = find_bounds(way_points);
         }
         gpx.metadata = Some(m);
     }
     gpx
 }
 
-fn _find_bounds(way_points: Vec<Waypoint>) -> Rect {
+fn find_bounds(way_points: Vec<Waypoint>) -> Option<Rect<f64>> {
+    if way_points.is_empty() {
+        return None;
+    }
+
     let points = collect_points(way_points);
     let min_x = points.iter().map(|p| p.latitude).fold(f64::INFINITY, f64::min);
     let max_x = points.iter().map(|p| p.latitude).fold(f64::NEG_INFINITY, f64::max);
     let min_y = points.iter().map(|p| p.longitude).fold(f64::INFINITY, f64::min);
     let max_y = points.iter().map(|p| p.longitude).fold(f64::NEG_INFINITY, f64::max);
-    Rect::new(
+    Some(Rect::new(
         coord! { x: min_x, y: min_y },
         coord! { x: max_x, y: max_y }
-    )
+    ))
 }
 
 fn collect_points(way_points: Vec<Waypoint>) -> Vec<Point> {
@@ -52,7 +55,7 @@ mod tests {
     use geo_types::Point as GeoPoint;
     use haversine_rs::point::Point as HavPoint;
 
-    use crate::geo::{adjust_bounds, distance, _find_bounds};
+    use crate::geo::{fit_bounds, distance, find_bounds};
 
     #[test]
     fn test_distance() {
@@ -63,7 +66,7 @@ mod tests {
     }
 
     #[test]
-    fn test_adjust_bounds() {
+    fn test_fit_bounds() {
         let mut meta = Metadata::default();
         let rect = Rect::new(
                 coord! { x: 10., y: 20. },
@@ -73,7 +76,7 @@ mod tests {
         let mut gpx = Gpx::default();
         gpx.metadata = Some(meta);
 
-        let res = adjust_bounds(gpx);
+        let res = fit_bounds(gpx, vec![]);
         assert_eq!(None, res.metadata.and_then(|m| m.bounds))
     }
 
@@ -82,7 +85,7 @@ mod tests {
         let point_0 = GeoPoint::new(40.7767644, -73.9761399);
         let point_1 = GeoPoint::new(40.771209, -73.9673991);
         let points = vec![Waypoint::new(point_0), Waypoint::new(point_1)];
-        let rect = _find_bounds(points);
+        let rect = find_bounds(points).unwrap();
         assert_eq!(40.771209, rect.min().x);
         assert_eq!(-73.9761399, rect.min().y);
         assert_eq!(40.7767644, rect.max().x);

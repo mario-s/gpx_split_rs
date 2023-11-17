@@ -3,7 +3,7 @@ use gpx::{Gpx, Track, TrackSegment, Waypoint, Route};
 
 use crate::limit::Limit;
 use crate::io::*;
-use crate::geo::adjust_bounds;
+use crate::geo::fit_bounds;
 
 pub trait Splitter {
     fn split(&self) -> Result<usize, Error>;
@@ -87,7 +87,8 @@ impl RouteSplitter {
     ///
     fn write_route(&self, src_gpx: &Gpx, route: &Route, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
-        let mut gpx = adjust_bounds(src_gpx.clone());
+        //TODO pass points to fit_bounds
+        let mut gpx = fit_bounds(src_gpx.clone(), vec![]);
         gpx.routes.clear();
         gpx.routes.push(route.to_owned());
 
@@ -172,7 +173,8 @@ impl TrackSplitter {
     ///
     fn write_track(&self, src_gpx: &Gpx, track: &Track, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
-        let mut gpx = adjust_bounds(src_gpx.clone());
+        //TODO pass points to fit_bounds
+        let mut gpx = fit_bounds(src_gpx.clone(), vec![]);
         gpx.tracks.clear();
         gpx.tracks.push(track.to_owned());
         gpx.tracks.shrink_to_fit();
