@@ -2,7 +2,7 @@ use std::io::Error;
 use gpx::{Gpx, Track, TrackSegment, Waypoint, Route};
 
 use crate::limit::Limit;
-use crate::io::{read_gpx, write_gpx, create_path};
+use crate::io::*;
 use crate::geo::adjust_bounds;
 
 pub trait Splitter {
@@ -91,8 +91,7 @@ impl RouteSplitter {
         gpx.routes.clear();
         gpx.routes.push(route.to_owned());
 
-        let path = create_path(&self.path, counter)?;
-        write_gpx(gpx, path)
+        write_gpx(gpx, &self.path, counter)
     }
 }
 
@@ -178,8 +177,7 @@ impl TrackSplitter {
         gpx.tracks.push(track.to_owned());
         gpx.tracks.shrink_to_fit();
 
-        let path = create_path(&self.path, counter)?;
-        write_gpx(gpx, path)
+        write_gpx(gpx, &self.path, counter)
     }
 }
 
