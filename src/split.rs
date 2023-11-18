@@ -5,15 +5,21 @@ use crate::limit::Limit;
 use crate::io::*;
 use crate::geo::fit_bounds;
 
+/// Trait for impls which split a route or track.
+///
 pub trait Splitter {
     fn split(&self) -> Result<usize, Error>;
 }
 
+/// Splitter for routes.
+///
 pub struct RouteSplitter {
     path: String,
     limit: Box<dyn Limit>,
 }
 
+/// Splitter for tracks.
+///
 pub struct TrackSplitter {
     path: String,
     limit: Box<dyn Limit>,

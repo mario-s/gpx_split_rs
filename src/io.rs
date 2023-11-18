@@ -6,6 +6,8 @@ use gpx::write;
 use std::io::{BufReader, Error, ErrorKind};
 use std::fs::File;
 
+/// Reads Gpx data from the given path.
+///
 pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -16,6 +18,9 @@ pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
     }
 }
 
+/// Writes the Gpx into a new file pased on the given path
+/// while appending the counter to the filename.
+///
 pub fn write_gpx(gpx: Gpx, path: &String, counter: usize) -> Result<(), Error> {
     let p = create_path(path, counter)?;
     let file = File::create(p)?;
