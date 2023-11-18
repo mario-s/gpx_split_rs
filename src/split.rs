@@ -1,5 +1,5 @@
 use std::io::Error;
-use gpx::{Gpx, Track, TrackSegment, Waypoint, Route};
+use gpx::{Gpx, Route, Track, TrackSegment, Waypoint};
 
 use crate::limit::Limit;
 use crate::io::*;
@@ -186,7 +186,7 @@ impl TrackSplitter {
 
 #[cfg(test)]
 mod tests {
-    use gpx::{Track, TrackSegment, Waypoint, Route};
+    use gpx::{Route, Track, TrackSegment, Waypoint};
     use crate::limit::PointsLimit;
     use crate::split::{RouteSplitter, TrackSplitter};
 
