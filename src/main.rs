@@ -1,8 +1,8 @@
-//import
+use std::io::Error;
 use clap::{Parser, ValueEnum};
 
-use gpx_split::split::Context;
-use gpx_split::limit::{Limit, LengthLimit, PointsLimit};
+use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter};
+use gpx_split::limit::{LengthLimit, PointsLimit, Limit};
 
 
 /// program to split a GPX file
@@ -15,14 +15,26 @@ struct Arguments {
     /// track will be split when the maximum is exceeded, points or length in Meter
     #[arg(short, long, value_name="MAXIMUM", default_value_t = 500)]
     max: u32,
+    /// split either routes or the tracks in the GPX file
+    #[arg(short, long, value_enum, default_value_t=Trace::Track)]
+    trace: Trace,
     /// split the track by number of points, or by length in Meter
-    #[arg(short, long, value_enum, default_value_t=SplitType::Point)]
-    split_type: SplitType,
+    #[arg(short, long, value_enum, default_value_t=By::Point)]
+    by: By,
+}
+
+/// what to split in the gpx file
+#[derive(ValueEnum, Clone)]
+enum Trace {
+    /// split the routes
+    Route,
+    /// split the tracks
+    Track,
 }
 
 /// splitting occurs when one of the maximum values is reached
 #[derive(ValueEnum, Clone)]
-enum SplitType {
+enum By {
     /// split by number of points
     Point,
     /// split by length of track
@@ -32,16 +44,25 @@ enum SplitType {
 fn main() {
     let args = Arguments::parse();
     let path = args.path;
-    let split = args.split_type;
+    let trace = args.trace;
+    let by = args.by;
     let max = args.max;
 
-    match split {
-        SplitType::Len => execute(path, LengthLimit::new(max)),
-        SplitType::Point => execute(path, PointsLimit::new(max)),
+    let limit = create_limit(max, by);
+    let res = match trace {
+        Trace::Route => run(RouteSplitter::new(path, limit)),
+        Trace::Track => run(TrackSplitter::new(path, limit)),
+    };
+    res.unwrap();
+}
+
+fn create_limit(max: u32, by: By) -> Box<dyn Limit> {
+    match by {
+        By::Len => Box::new(LengthLimit::new(max)),
+        By::Point => Box::new(PointsLimit::new(max))
     }
 }
 
-fn execute<S>(path: String, strategy: S) where S: Limit {
-    let mut c = Context::new(path, strategy);
-    c.execute().expect("failed to spilt file!");
+fn run<T: Splitter>(splitter: T) -> Result<usize, Error> {
+    splitter.split()
 }

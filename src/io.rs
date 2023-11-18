@@ -6,6 +6,8 @@ use gpx::write;
 use std::io::{BufReader, Error, ErrorKind};
 use std::fs::File;
 
+/// Reads Gpx data from the given path.
+///
 pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -16,8 +18,12 @@ pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
     }
 }
 
-pub fn write_gpx(gpx: Gpx, path: String) -> Result<(), Error> {
-    let file = File::create(path)?;
+/// Writes the Gpx into a new file pased on the given path
+/// while appending the counter to the filename.
+///
+pub fn write_gpx(gpx: Gpx, path: &String, counter: usize) -> Result<(), Error> {
+    let p = create_path(path, counter)?;
+    let file = File::create(p)?;
         let res = write(&gpx, file);
         match res {
             Ok(_) => Ok(()),
@@ -25,14 +31,9 @@ pub fn write_gpx(gpx: Gpx, path: String) -> Result<(), Error> {
         }
 }
 
-/// Function to convert an GpxError
-fn to_error(gpx_err: GpxError) -> Error {
-    Error::new(ErrorKind::Other, gpx_err.to_string())
-}
-
 /// creates a new path to a file
 ///
-pub fn create_path(path: &String, counter: usize) -> Result<String, Error> {
+fn create_path(path: &String, counter: usize) -> Result<String, Error> {
     let parts: Vec<&str> = path.rsplitn(2, '.').collect();
     if parts.len() != 2 {
         return Err(Error::new(ErrorKind::InvalidInput, format!("invalid file: {}", path)));
@@ -40,6 +41,11 @@ pub fn create_path(path: &String, counter: usize) -> Result<String, Error> {
     //new file name would be like foo_1.gpx
     let name = format!("{}_{}.{}", parts[1], counter, parts[0]);
     Ok(name)
+}
+
+/// Function to convert an GpxError
+fn to_error(gpx_err: GpxError) -> Error {
+    Error::new(ErrorKind::Other, gpx_err.to_string())
 }
 
 #[test]

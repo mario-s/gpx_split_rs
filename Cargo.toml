@@ -10,6 +10,7 @@ authors = ["Mario Schroeder <spindizzy@outlook.com>"]
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
 gpx = "0.9.1"
+geo-types = "0.7.11"
 haversine-rs = "0.3.0"
 
 [build-dependencies]

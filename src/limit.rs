@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use gpx::Waypoint;
 
-use crate::dist;
+use crate::geo::distance_points;
 
 /// checks if the points exceed a defined limit.
 pub trait Limit {
@@ -12,7 +12,7 @@ pub trait Limit {
 
 /// strategy to check limit based on the number of points
 ///
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PointsLimit {
     max_points: u32,
 }
@@ -33,7 +33,7 @@ impl Limit for PointsLimit {
 
 /// strategy to check limit based on the length of the sum of the distances between the points
 ///
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LengthLimit {
     max_length: u32,
 }
@@ -46,6 +46,6 @@ impl LengthLimit {
 
 impl Limit for LengthLimit {
     fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
-        dist::distance_points(points.to_owned()) > self.max_length.into()
+        distance_points(points) > self.max_length.into()
     }
 }
