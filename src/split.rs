@@ -215,12 +215,9 @@ mod tests {
         let routes = new_route_splitter(2).spilt_routes(&vec![route]);
 
         assert_eq!(3, routes.len());
-        let first_points = routes.first()
-            .and_then(|r| Some(r.points.clone())).unwrap();
-        let middle_points = routes.get(1)
-            .and_then(|r| Some(r.points.clone())).unwrap();
-        let last_points = routes.last()
-            .and_then(|r| Some(r.points.clone())).unwrap();
+        let first_points = routes.first().map(|r| r.points.clone()).unwrap();
+        let middle_points = routes.get(1).map(|r| r.points.clone()).unwrap();
+        let last_points = routes.last().map(|r| r.points.clone()).unwrap();
         assert_points(first_points, middle_points, last_points);
     }
 
@@ -231,7 +228,7 @@ mod tests {
             point.name = Some(format!("point {}", i));
             route.points.push(point);
         }
-        return route;
+        route
     }
 
     fn new_route_splitter(max: u32) -> RouteSplitter {
@@ -269,14 +266,11 @@ mod tests {
         assert_eq!(3, tracks.len());
 
         let first_points = tracks.first()
-            .and_then(|t| t.segments.first())
-            .and_then(|s| Some(s.points.clone())).unwrap();
+            .and_then(|t| t.segments.first()).map(|s| s.points.clone()).unwrap();
         let middle_points = tracks.get(1)
-            .and_then(|t| t.segments.first())
-            .and_then(|s| Some(s.points.clone())).unwrap();
+            .and_then(|t| t.segments.first()).map(|s| s.points.clone()).unwrap();
         let last_points = tracks.last()
-            .and_then(|t| t.segments.first())
-            .and_then(|s| Some(s.points.clone())).unwrap();
+            .and_then(|t| t.segments.first()).map(|s| s.points.clone()).unwrap();
         assert_points(first_points, middle_points, last_points);
     }
 
@@ -289,7 +283,7 @@ mod tests {
         }
         let mut track = Track::new();
         track.segments.push(segment);
-        return track;
+        track
     }
 
     fn new_track_splitter(max: u32) -> TrackSplitter {

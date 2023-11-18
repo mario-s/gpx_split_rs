@@ -6,7 +6,7 @@ use haversine_rs::distance_vec;
 
 /// Calculates the distance of all waypoints in the track.
 /// Returns result in Meter.
-pub fn distance_points(way_points: &Vec<Waypoint>) -> f64 {
+pub fn distance_points(way_points: &[Waypoint]) -> f64 {
     distance(collect_points(way_points))
 }
 
@@ -20,7 +20,7 @@ fn distance(points: Vec<Point>) -> f64 {
 pub fn fit_bounds(mut gpx: Gpx, way_points: &Vec<Waypoint>) -> Gpx {
     if let Some(existing) = gpx.metadata {
         let mut m = existing.clone();
-        if let Some(_) = m.bounds {
+        if m.bounds.is_some() {
             m.bounds = find_bounds(way_points);
         }
         gpx.metadata = Some(m);
@@ -44,7 +44,7 @@ fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
     ))
 }
 
-fn collect_points(way_points: &Vec<Waypoint>) -> Vec<Point> {
+fn collect_points(way_points: &[Waypoint]) -> Vec<Point> {
     way_points.iter().map(|p| p.point()).map(|p| Point::new(p.x(), p.y())).collect()
 }
 
