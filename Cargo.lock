@@ -282,6 +282,7 @@ dependencies = [
  "geo-types",
  "gpx",
  "haversine-rs",
+ "log",
 ]
 
 [[package]]

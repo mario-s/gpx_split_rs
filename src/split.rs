@@ -1,4 +1,5 @@
 use std::io::Error;
+use log::info;
 use gpx::{Gpx, Route, Track, TrackSegment, Waypoint};
 
 use crate::limit::Limit;
@@ -32,6 +33,7 @@ impl Splitter for RouteSplitter {
     fn split(&self) -> Result<usize, Error> {
         let gpx = read_gpx(self.path.as_str())?;
         let routes = self.spilt_routes(&gpx.routes);
+        info!("{} routes after splitting", routes.len());
         self.write_routes(gpx, &routes)
     }
 }
@@ -79,11 +81,14 @@ impl RouteSplitter {
         cloned_route
     }
 
-    /// writes the given routes into new files
+    /// Writes the given route(s) into new files, when there are more than one route.
+    /// If there is only one route, we did not split anything, so no need to write.
     ///
     fn write_routes(&self, src_gpx: Gpx, routes: &Vec<Route>) -> Result<usize, Error> {
-        for (index, route) in routes.iter().enumerate() {
-            self.write_route(&src_gpx, route, index)?;
+        if routes.len() > 1 {
+            for (index, route) in routes.iter().enumerate() {
+                self.write_route(&src_gpx, route, index)?;
+            }
         }
 
         Ok(routes.len())
@@ -107,6 +112,7 @@ impl Splitter for TrackSplitter {
     fn split(&self) -> Result<usize, Error> {
         let gpx = read_gpx(self.path.as_str())?;
         let tracks = self.spilt_tracks(&gpx.tracks);
+        info!("{} tracks after splitting", tracks.len());
         self.write_tracks(gpx, tracks)
     }
 }
@@ -164,11 +170,14 @@ impl TrackSplitter {
         cloned_track
     }
 
-    /// writes the given tracks into new files
+    /// Writes the given tracks into new files, when there are more than one route.
+    /// If there is only one track, we did not split anything, so no need to write.
     ///
     fn write_tracks(&self, src_gpx: Gpx, tracks: Vec<Track>) -> Result<usize, Error> {
-        for (index, track) in tracks.iter().enumerate() {
-            self.write_track(&src_gpx, track, index)?;
+        if tracks.len() > 1 {
+            for (index, track) in tracks.iter().enumerate() {
+                self.write_track(&src_gpx, track, index)?;
+            }
         }
 
         Ok(tracks.len())
