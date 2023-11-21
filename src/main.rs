@@ -3,7 +3,7 @@ use std::time::Instant;
 use clap::{Parser, ValueEnum};
 use log::info;
 
-use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter};
+use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter, Context};
 use gpx_split::limit::{LengthLimit, PointsLimit, Limit};
 
 
@@ -55,8 +55,8 @@ fn main() {
 
     let limit = create_limit(max, by);
     let res = match trace {
-        Trace::Route => run(RouteSplitter::new(path, limit)),
-        Trace::Track => run(TrackSplitter::new(path, limit)),
+        Trace::Route => run(path.clone(), Box::new(RouteSplitter::new(path, limit))),
+        Trace::Track => run(path.clone(), Box::new(TrackSplitter::new(path, limit))),
     };
     res.unwrap();
 
@@ -70,6 +70,7 @@ fn create_limit(max: u32, by: By) -> Box<dyn Limit> {
     }
 }
 
-fn run<T: Splitter>(splitter: T) -> Result<usize, Error> {
-    splitter.split()
+fn run<T: 'static>(path: String, splitter: Box<dyn Splitter<T>>) -> Result<usize, Error> {
+    let c = Context::new(path, splitter);
+    c.run()
 }

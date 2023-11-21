@@ -14,24 +14,31 @@ pub struct Context<T> {
 
 impl<T> Context<T> {
 
-    fn run(&self) -> Result<usize, Error> {
+    pub fn new(path: String, splitter: Box<dyn Splitter<T>>) -> Self {
+        Context { path, splitter}
+    }
+
+    pub fn run(&self) -> Result<usize, Error> {
         let gpx = read_gpx(self.path.as_str())?;
-        let origin = self.splitter.traces(gpx);
+        let origin = self.splitter.traces(gpx.clone());
+        let len = origin.len();
         let new_traces = self.splitter.split(origin);
-        if new_traces.len() > origin.len() {
+        if new_traces.len() > len {
             info!("{} traces after splitting", new_traces.len());
-            return self.splitter.write(gpx, new_traces);
+            return self.splitter.write(&gpx, new_traces);
         }
-        Ok(origin.len())
+        Ok(len)
     }
 }
+
+//--------------------------------------------------------------
 
 /// Trait for impl which split a route or track.
 ///
 pub trait Splitter<T> {
     fn traces(&self, gpx: Gpx) -> Vec<T>;
     fn split(&self, origin: Vec<T>) -> Vec<T>;
-    fn write(&self, gpx: Gpx, new_traces: Vec<T>) -> Result<usize, Error>;
+    fn write(&self, gpx: &Gpx, new_traces: Vec<T>) -> Result<usize, Error>;
 }
 
 /// Splitter for routes.
@@ -56,16 +63,16 @@ impl Splitter<Route> for RouteSplitter {
         gpx.routes
     }
 
-    fn split(&self, routes: Vec<Route>) -> Vec<Route> {
-        self.spilt_routes(&routes)
+    fn split(&self, origin: Vec<Route>) -> Vec<Route> {
+        self.spilt_routes(&origin)
     }
 
-        /// Writes the given route(s) into new files, when there are more than one route.
+    /// Writes the given route(s) into new files, when there are more than one route.
     /// If there is only one route, we did not split anything, so no need to write.
     ///
-    fn write(&self, gpx: Gpx, routes: Vec<Route>) -> Result<usize, Error> {
+    fn write(&self, gpx: &Gpx, routes: Vec<Route>) -> Result<usize, Error> {
         for (index, route) in routes.iter().enumerate() {
-            self.write_route(&gpx, route, index)?;
+            self.write_route(gpx, route, index)?;
         }
 
         Ok(routes.len())
@@ -117,28 +124,41 @@ impl RouteSplitter {
 
     /// writes a single route into a file, counter is the suffix for the file name
     ///
-    fn write_route(&self, src_gpx: &Gpx, route: &Route, counter: usize) -> Result<(), Error> {
+    fn write_route(&self, src_gpx: &Gpx, trace: &Route, counter: usize) -> Result<(), Error> {
         //clone the source gpx and just clear the tracks to keep the rest
-        let mut gpx = fit_bounds(src_gpx.clone(), &route.points);
-        gpx.routes.clear();
-        gpx.routes.push(route.to_owned());
-
+        let gpx = self.clone_gpx(src_gpx, trace);
         write_gpx(gpx, &self.path, counter)
+    }
+
+    fn clone_gpx(&self, src_gpx: &Gpx, trace: &Route) -> Gpx {
+        let mut gpx = fit_bounds(src_gpx.clone(), &trace.points);
+        gpx.routes.clear();
+        gpx.routes.push(trace.to_owned());
+        gpx
     }
 }
 
 //--------------------------------------------------------------
 
 impl Splitter<Track> for TrackSplitter {
-    fn split(&self) -> Result<usize, Error> {
-        let gpx = read_gpx(self.path.as_str())?;
-        let existing = &gpx.tracks;
-        let tracks = self.spilt_tracks(existing);
-        if tracks.len() > existing.len() {
-            info!("{} routes after splitting", tracks.len());
-            return self.write_tracks(gpx, tracks);
+
+    fn traces(&self, gpx: Gpx) -> Vec<Track> {
+        gpx.tracks
+    }
+
+    fn split(&self, origin: Vec<Track>) -> Vec<Track> {
+        self.spilt_tracks(&origin)
+    }
+
+    /// Writes the given tracks into new files, when there are more than one route.
+    /// If there is only one track, we did not split anything, so no need to write.
+    ///
+    fn write(&self, gpx: &Gpx, new_traces: Vec<Track>) -> Result<usize, Error> {
+        for (index, track) in new_traces.iter().enumerate() {
+            self.write_track(gpx, track, index)?;
         }
-        Ok(existing.len())
+
+        Ok(new_traces.len())
     }
 }
 
@@ -196,28 +216,21 @@ impl TrackSplitter {
         cloned_track
     }
 
-    /// Writes the given tracks into new files, when there are more than one route.
-    /// If there is only one track, we did not split anything, so no need to write.
-    ///
-    fn write_tracks(&self, src_gpx: Gpx, tracks: Vec<Track>) -> Result<usize, Error> {
-        for (index, track) in tracks.iter().enumerate() {
-            self.write_track(&src_gpx, track, index)?;
-        }
-
-        Ok(tracks.len())
-    }
-
     /// writes a single track into a file, counter is the suffix for the file name
     ///
-    fn write_track(&self, src_gpx: &Gpx, track: &Track, counter: usize) -> Result<(), Error> {
-        //clone the source gpx and just clear the tracks to keep the rest
-        let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
+    fn write_track(&self, src_gpx: &Gpx, trace: &Track, counter: usize) -> Result<(), Error> {
+        let gpx = self.clone_gpx(src_gpx, trace);
+        write_gpx(gpx, &self.path, counter)
+    }
+
+    /// clone the source gpx and just clear the tracks to keep the rest
+    fn clone_gpx(&self, src_gpx: &Gpx, trace: &Track) -> Gpx {
+        let points:Vec<Waypoint> = trace.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
         let mut gpx = fit_bounds(src_gpx.clone(), &points);
         gpx.tracks.clear();
-        gpx.tracks.push(track.to_owned());
+        gpx.tracks.push(trace.to_owned());
         gpx.tracks.shrink_to_fit();
-
-        write_gpx(gpx, &self.path, counter)
+        gpx
     }
 }
 
