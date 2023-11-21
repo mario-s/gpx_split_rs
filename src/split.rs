@@ -6,10 +6,32 @@ use crate::limit::Limit;
 use crate::io::*;
 use crate::geo::fit_bounds;
 
-/// Trait for impls which split a route or track.
+///common context for splitters
+pub struct Context<T> {
+    path: String,
+    splitter: Box<dyn Splitter<T>>,
+}
+
+impl<T> Context<T> {
+
+    fn run(&self) -> Result<usize, Error> {
+        let gpx = read_gpx(self.path.as_str())?;
+        let origin = self.splitter.traces(gpx);
+        let new_traces = self.splitter.split(origin);
+        if new_traces.len() > origin.len() {
+            info!("{} traces after splitting", new_traces.len());
+            return self.splitter.write(gpx, new_traces);
+        }
+        Ok(origin.len())
+    }
+}
+
+/// Trait for impl which split a route or track.
 ///
-pub trait Splitter {
-    fn split(&self) -> Result<usize, Error>;
+pub trait Splitter<T> {
+    fn traces(&self, gpx: Gpx) -> Vec<T>;
+    fn split(&self, origin: Vec<T>) -> Vec<T>;
+    fn write(&self, gpx: Gpx, new_traces: Vec<T>) -> Result<usize, Error>;
 }
 
 /// Splitter for routes.
@@ -28,17 +50,25 @@ pub struct TrackSplitter {
 
 //--------------------------------------------------------------
 
-impl Splitter for RouteSplitter {
+impl Splitter<Route> for RouteSplitter {
 
-    fn split(&self) -> Result<usize, Error> {
-        let gpx = read_gpx(self.path.as_str())?;
-        let existing = &gpx.routes;
-        let routes = self.spilt_routes(existing);
-        if routes.len() > existing.len() {
-            info!("{} routes after splitting", routes.len());
-            return self.write_routes(gpx, &routes);
+    fn traces(&self, gpx: Gpx) -> Vec<Route> {
+        gpx.routes
+    }
+
+    fn split(&self, routes: Vec<Route>) -> Vec<Route> {
+        self.spilt_routes(&routes)
+    }
+
+        /// Writes the given route(s) into new files, when there are more than one route.
+    /// If there is only one route, we did not split anything, so no need to write.
+    ///
+    fn write(&self, gpx: Gpx, routes: Vec<Route>) -> Result<usize, Error> {
+        for (index, route) in routes.iter().enumerate() {
+            self.write_route(&gpx, route, index)?;
         }
-        Ok(existing.len())
+
+        Ok(routes.len())
     }
 }
 
@@ -85,17 +115,6 @@ impl RouteSplitter {
         cloned_route
     }
 
-    /// Writes the given route(s) into new files, when there are more than one route.
-    /// If there is only one route, we did not split anything, so no need to write.
-    ///
-    fn write_routes(&self, src_gpx: Gpx, routes: &Vec<Route>) -> Result<usize, Error> {
-        for (index, route) in routes.iter().enumerate() {
-            self.write_route(&src_gpx, route, index)?;
-        }
-
-        Ok(routes.len())
-    }
-
     /// writes a single route into a file, counter is the suffix for the file name
     ///
     fn write_route(&self, src_gpx: &Gpx, route: &Route, counter: usize) -> Result<(), Error> {
@@ -110,7 +129,7 @@ impl RouteSplitter {
 
 //--------------------------------------------------------------
 
-impl Splitter for TrackSplitter {
+impl Splitter<Track> for TrackSplitter {
     fn split(&self) -> Result<usize, Error> {
         let gpx = read_gpx(self.path.as_str())?;
         let existing = &gpx.tracks;
