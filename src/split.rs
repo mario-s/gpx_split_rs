@@ -114,7 +114,7 @@ impl Splitter for TrackSplitter {
     fn split(&self) -> Result<usize, Error> {
         let gpx = read_gpx(self.path.as_str())?;
         let existing = &gpx.tracks;
-        let tracks = self.spilt_tracks(&existing);
+        let tracks = self.spilt_tracks(existing);
         if tracks.len() > existing.len() {
             info!("{} routes after splitting", tracks.len());
             return self.write_tracks(gpx, tracks);
