@@ -33,10 +33,10 @@ impl Splitter for RouteSplitter {
     fn split(&self) -> Result<usize, Error> {
         let gpx = read_gpx(self.path.as_str())?;
         let existing = &gpx.routes;
-        let routes = self.spilt_routes(&existing);
+        let routes = self.spilt_routes(existing);
         if routes.len() > existing.len() {
             info!("{} routes after splitting", routes.len());
-            return self.write_routes(&gpx, &routes);
+            return self.write_routes(gpx, &routes);
         }
         Ok(existing.len())
     }
@@ -88,11 +88,9 @@ impl RouteSplitter {
     /// Writes the given route(s) into new files, when there are more than one route.
     /// If there is only one route, we did not split anything, so no need to write.
     ///
-    fn write_routes(&self, src_gpx: &Gpx, routes: &Vec<Route>) -> Result<usize, Error> {
-        if routes.len() > 1 {
-            for (index, route) in routes.iter().enumerate() {
-                self.write_route(&src_gpx, route, index)?;
-            }
+    fn write_routes(&self, src_gpx: Gpx, routes: &Vec<Route>) -> Result<usize, Error> {
+        for (index, route) in routes.iter().enumerate() {
+            self.write_route(&src_gpx, route, index)?;
         }
 
         Ok(routes.len())
@@ -119,7 +117,7 @@ impl Splitter for TrackSplitter {
         let tracks = self.spilt_tracks(&existing);
         if tracks.len() > existing.len() {
             info!("{} routes after splitting", tracks.len());
-            return self.write_tracks(&gpx, tracks);
+            return self.write_tracks(gpx, tracks);
         }
         Ok(existing.len())
     }
@@ -182,11 +180,9 @@ impl TrackSplitter {
     /// Writes the given tracks into new files, when there are more than one route.
     /// If there is only one track, we did not split anything, so no need to write.
     ///
-    fn write_tracks(&self, src_gpx: &Gpx, tracks: Vec<Track>) -> Result<usize, Error> {
-        if tracks.len() > 1 {
-            for (index, track) in tracks.iter().enumerate() {
-                self.write_track(&src_gpx, track, index)?;
-            }
+    fn write_tracks(&self, src_gpx: Gpx, tracks: Vec<Track>) -> Result<usize, Error> {
+        for (index, track) in tracks.iter().enumerate() {
+            self.write_track(&src_gpx, track, index)?;
         }
 
         Ok(tracks.len())
