@@ -1,4 +1,5 @@
 use std::io::Error;
+use log::info;
 use gpx::{Gpx, Route, Track, TrackSegment, Waypoint};
 
 use crate::limit::Limit;
@@ -31,8 +32,13 @@ impl Splitter for RouteSplitter {
 
     fn split(&self) -> Result<usize, Error> {
         let gpx = read_gpx(self.path.as_str())?;
-        let routes = self.spilt_routes(&gpx.routes);
-        self.write_routes(gpx, &routes)
+        let existing = &gpx.routes;
+        let routes = self.spilt_routes(existing);
+        if routes.len() > existing.len() {
+            info!("{} routes after splitting", routes.len());
+            return self.write_routes(gpx, &routes);
+        }
+        Ok(existing.len())
     }
 }
 
@@ -79,7 +85,8 @@ impl RouteSplitter {
         cloned_route
     }
 
-    /// writes the given routes into new files
+    /// Writes the given route(s) into new files, when there are more than one route.
+    /// If there is only one route, we did not split anything, so no need to write.
     ///
     fn write_routes(&self, src_gpx: Gpx, routes: &Vec<Route>) -> Result<usize, Error> {
         for (index, route) in routes.iter().enumerate() {
@@ -106,8 +113,13 @@ impl RouteSplitter {
 impl Splitter for TrackSplitter {
     fn split(&self) -> Result<usize, Error> {
         let gpx = read_gpx(self.path.as_str())?;
-        let tracks = self.spilt_tracks(&gpx.tracks);
-        self.write_tracks(gpx, tracks)
+        let existing = &gpx.tracks;
+        let tracks = self.spilt_tracks(existing);
+        if tracks.len() > existing.len() {
+            info!("{} routes after splitting", tracks.len());
+            return self.write_tracks(gpx, tracks);
+        }
+        Ok(existing.len())
     }
 }
 
@@ -147,6 +159,7 @@ impl TrackSplitter {
                 new_tracks.push(new_track);
             }
         }
+
         new_tracks
     }
 
@@ -164,7 +177,8 @@ impl TrackSplitter {
         cloned_track
     }
 
-    /// writes the given tracks into new files
+    /// Writes the given tracks into new files, when there are more than one route.
+    /// If there is only one track, we did not split anything, so no need to write.
     ///
     fn write_tracks(&self, src_gpx: Gpx, tracks: Vec<Track>) -> Result<usize, Error> {
         for (index, track) in tracks.iter().enumerate() {

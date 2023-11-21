@@ -1,5 +1,7 @@
 use std::io::Error;
+use std::time::Instant;
 use clap::{Parser, ValueEnum};
+use log::info;
 
 use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter};
 use gpx_split::limit::{LengthLimit, PointsLimit, Limit};
@@ -42,6 +44,9 @@ enum By {
 }
 
 fn main() {
+    env_logger::init();
+    let now = Instant::now();
+
     let args = Arguments::parse();
     let path = args.path;
     let trace = args.trace;
@@ -54,6 +59,8 @@ fn main() {
         Trace::Track => run(TrackSplitter::new(path, limit)),
     };
     res.unwrap();
+
+    info!("Splitting took {} milliseconds.", now.elapsed().as_millis());
 }
 
 fn create_limit(max: u32, by: By) -> Box<dyn Limit> {
