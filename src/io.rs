@@ -21,7 +21,7 @@ pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
 /// Writes the Gpx into a new file pased on the given path
 /// while appending the counter to the filename.
 ///
-pub fn write_gpx(gpx: Gpx, path: &String, counter: usize) -> Result<(), Error> {
+pub fn write_gpx(gpx: Gpx, path: &str, counter: usize) -> Result<(), Error> {
     let p = create_path(path, counter)?;
     let file = File::create(p)?;
         let res = write(&gpx, file);
@@ -33,7 +33,7 @@ pub fn write_gpx(gpx: Gpx, path: &String, counter: usize) -> Result<(), Error> {
 
 /// creates a new path to a file
 ///
-fn create_path(path: &String, counter: usize) -> Result<String, Error> {
+fn create_path(path: &str, counter: usize) -> Result<String, Error> {
     let parts: Vec<&str> = path.rsplitn(2, '.').collect();
     if parts.len() != 2 {
         return Err(Error::new(ErrorKind::InvalidInput, format!("invalid file: {}", path)));
@@ -50,6 +50,6 @@ fn to_error(gpx_err: GpxError) -> Error {
 
 #[test]
 fn test_create_path() {
-    let res = create_path(&"foo/bar.gpx".to_string(), 1).unwrap();
+    let res = create_path("foo/bar.gpx", 1).unwrap();
     assert_eq!("foo/bar_1.gpx", res);
 }

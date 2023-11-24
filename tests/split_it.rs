@@ -1,40 +1,50 @@
-use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter};
+use gpx_split::split::{Context, TrackSplitter, RouteSplitter};
 use gpx_split::limit::{LengthLimit, PointsLimit};
 
 #[test]
 fn test_track_length() {
-    let s = TrackSplitter::new(
-        "target/debug/track_l.gpx".to_string(),
-        Box::new(LengthLimit::new(1000)));
+    let path = "target/debug/track_l.gpx".to_string();
+    let splitter = Box::new(TrackSplitter::new(
+        Box::new(LengthLimit::new(1000))));
 
-    assert_splitted(s, 3)
+    let ctx = Context::new(path, splitter);
+    let res = ctx.run().unwrap();
+
+    assert_eq!(3, res);
 }
 
 #[test]
 fn test_track_points() {
-    let s = TrackSplitter::new(
-        "target/debug/track_p.gpx".to_string(),
-        Box::new(PointsLimit::new(50)));
-    assert_splitted(s, 2)
+    let path = "target/debug/track_p.gpx".to_string();
+    let splitter = Box::new(TrackSplitter::new(
+    Box::new(PointsLimit::new(50))));
+
+    let ctx = Context::new(path, splitter);
+    let res = ctx.run().unwrap();
+
+    assert_eq!(2, res);
 }
 
 #[test]
 fn test_route_length() {
-    let s = RouteSplitter::new(
-        "target/debug/route_l.gpx".to_string(),
-        Box::new(LengthLimit::new(5000)));
-    assert_splitted(s, 3)
+    let path = "target/debug/route_l.gpx".to_string();
+    let splitter = Box::new(RouteSplitter::new(
+    Box::new(LengthLimit::new(5000))));
+
+    let ctx = Context::new(path, splitter);
+    let res = ctx.run().unwrap();
+
+    assert_eq!(3, res);
 }
 
 #[test]
 fn test_route_points() {
-    let s = RouteSplitter::new(
-        "target/debug/route_p.gpx".to_string(),
-        Box::new(PointsLimit::new(40)));
-    assert_splitted(s, 2)
-}
+    let path = "target/debug/route_p.gpx".to_string();
+    let splitter = Box::new(RouteSplitter::new(
+    Box::new(PointsLimit::new(40))));
 
-fn assert_splitted<T: Splitter>(splitter: T, size: usize) {
-    let res = splitter.split().unwrap();
-    assert_eq!(size, res)
+    let ctx = Context::new(path, splitter);
+    let res = ctx.run().unwrap();
+
+    assert_eq!(2, res);
 }
