@@ -55,8 +55,8 @@ fn main() {
 
     let limit = create_limit(max, by);
     let res = match trace {
-        Trace::Route => run(path.clone(), Box::new(RouteSplitter::new(path, limit))),
-        Trace::Track => run(path.clone(), Box::new(TrackSplitter::new(path, limit))),
+        Trace::Route => run(path.clone(), Box::new(RouteSplitter::new(limit))),
+        Trace::Track => run(path.clone(), Box::new(TrackSplitter::new(limit))),
     };
     res.unwrap();
 
