@@ -50,6 +50,6 @@ fn to_error(gpx_err: GpxError) -> Error {
 
 #[test]
 fn test_create_path() {
-    let res = create_path(&"foo/bar.gpx", 1).unwrap();
+    let res = create_path("foo/bar.gpx", 1).unwrap();
     assert_eq!("foo/bar_1.gpx", res);
 }
