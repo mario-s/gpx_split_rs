@@ -25,9 +25,18 @@ impl<T> Context<T> {
         let new_traces = self.splitter.split(origin);
         if new_traces.len() > len {
             info!("{} traces after splitting", new_traces.len());
-            return self.splitter.write(&self.path, &gpx, new_traces);
+            return self.write(gpx, new_traces)
         }
         Ok(len)
+    }
+
+    fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {
+        for (index, trace) in traces.iter().enumerate() {
+            if let Err(err) = self.splitter.write(&self.path, &gpx, trace, index) {
+                return Err(err)
+            }
+        }
+        Ok(traces.len())
     }
 }
 
@@ -38,7 +47,7 @@ impl<T> Context<T> {
 pub trait Splitter<T> {
     fn traces(&self, gpx: Gpx) -> Vec<T>;
     fn split(&self, origin: Vec<T>) -> Vec<T>;
-    fn write(&self, path: &str, gpx: &Gpx, new_traces: Vec<T>) -> Result<usize, Error>;
+    fn write(&self, path: &str, gpx: &Gpx, trace: &T, counter: usize) -> Result<(), Error>;
 }
 
 /// Splitter for routes.
@@ -68,13 +77,9 @@ impl Splitter<Route> for RouteSplitter {
     /// Writes the given route(s) into new files, when there are more than one route.
     /// If there is only one route, we did not split anything, so no need to write.
     ///
-    fn write(&self, path: &str, gpx: &Gpx, new_routes: Vec<Route>) -> Result<usize, Error> {
-        for (index, route) in new_routes.iter().enumerate() {
-            let clone = self.clone_gpx(gpx, route);
-            write_gpx(clone, path, index)?
-        }
-
-        Ok(new_routes.len())
+    fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> Result<(), Error> {
+        let clone = self.clone_gpx(gpx, route);
+        write_gpx(clone, path, index)
     }
 }
 
@@ -144,13 +149,9 @@ impl Splitter<Track> for TrackSplitter {
     /// Writes the given tracks into new files, when there are more than one route.
     /// If there is only one track, we did not split anything, so no need to write.
     ///
-    fn write(&self, path: &str, gpx: &Gpx, new_tracks: Vec<Track>) -> Result<usize, Error> {
-        for (index, track) in new_tracks.iter().enumerate() {
-            let clone = self.clone_gpx(gpx, track);
-            write_gpx(clone, path, index)?;
-        }
-
-        Ok(new_tracks.len())
+    fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> Result<(), Error> {
+        let clone = self.clone_gpx(gpx, track);
+        write_gpx(clone, path, index)
     }
 }
 
