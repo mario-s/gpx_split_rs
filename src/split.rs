@@ -31,11 +31,10 @@ impl<T> Context<T> {
     }
 
     fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {
-        for (index, trace) in traces.iter().enumerate() {
-            if let Err(err) = self.splitter.write(&self.path, &gpx, trace, index) {
-                return Err(err)
-            }
-        }
+        traces.iter().enumerate().try_for_each(|(index, trace)| {
+            self.splitter.write(&self.path, &gpx, trace, index)
+        })?;
+
         Ok(traces.len())
     }
 }
