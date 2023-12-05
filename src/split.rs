@@ -1,3 +1,4 @@
+use std::thread;
 use std::io::Error;
 use log::debug;
 use gpx::{Gpx, Route, Track, TrackSegment, Waypoint};
@@ -77,11 +78,16 @@ impl Splitter<Route> for RouteSplitter {
     /// If there is only one route, we did not split anything, so no need to write.
     ///
     fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> Result<(), Error> {
-        let mut clone = fit_bounds(gpx.clone(), &route.points);
-        clone.routes.clear();
-        clone.routes.push(route.to_owned());
-
-        write_gpx(clone, path, index)
+        let path = path.to_string();
+        let gpx = gpx.clone();
+        let route = route.clone();
+        let handle = thread::spawn(move || {
+            let mut gpx = fit_bounds(gpx, &route.points);
+            gpx.routes.clear();
+            gpx.routes.push(route);
+            write_gpx(gpx, &path, index)
+        });
+        handle.join().unwrap()
     }
 }
 
@@ -145,13 +151,19 @@ impl Splitter<Track> for TrackSplitter {
     /// If there is only one track, we did not split anything, so no need to write.
     ///
     fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> Result<(), Error> {
-        let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
-        let mut clone = fit_bounds(gpx.clone(), &points);
-        clone.tracks.clear();
-        clone.tracks.push(track.to_owned());
-        clone.tracks.shrink_to_fit();
+        let path = path.to_string();
+        let gpx = gpx.clone();
+        let track = track.clone();
+        let handle = thread::spawn(move || {
+            let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
+            let mut gpx = fit_bounds(gpx, &points);
+            gpx.tracks.clear();
+            gpx.tracks.push(track);
+            gpx.tracks.shrink_to_fit();
 
-        write_gpx(clone, path, index)
+            write_gpx(gpx, &path, index)
+        });
+        handle.join().unwrap()
     }
 }
 
