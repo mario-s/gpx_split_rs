@@ -1,7 +1,7 @@
 use std::io::Error;
 use std::time::Instant;
 use clap::{Parser, ValueEnum};
-use log::info;
+use log::debug;
 
 use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter, Context};
 use gpx_split::limit::{LengthLimit, PointsLimit, Limit};
@@ -60,7 +60,7 @@ fn main() {
     };
     res.unwrap();
 
-    info!("Splitting took {} milliseconds.", now.elapsed().as_millis());
+    debug!("Splitting took {} milliseconds.", now.elapsed().as_millis());
 }
 
 fn create_limit(max: u32, by: By) -> Box<dyn Limit> {

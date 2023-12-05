@@ -1,5 +1,5 @@
 use std::io::Error;
-use log::info;
+use log::debug;
 use gpx::{Gpx, Route, Track, TrackSegment, Waypoint};
 
 use crate::limit::Limit;
@@ -24,7 +24,7 @@ impl<T> Context<T> {
         let len = origin.len();
         let new_traces = self.splitter.split(origin);
         if new_traces.len() > len {
-            info!("{} traces after splitting", new_traces.len());
+            debug!("{} traces after splitting", new_traces.len());
             return self.write(gpx, new_traces)
         }
         Ok(len)
