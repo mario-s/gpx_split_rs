@@ -77,7 +77,10 @@ impl Splitter<Route> for RouteSplitter {
     /// If there is only one route, we did not split anything, so no need to write.
     ///
     fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> Result<(), Error> {
-        let clone = self.clone_gpx(gpx, route);
+        let mut clone = fit_bounds(gpx.clone(), &route.points);
+        clone.routes.clear();
+        clone.routes.push(route.to_owned());
+
         write_gpx(clone, path, index)
     }
 }
@@ -124,13 +127,6 @@ impl RouteSplitter {
         cloned_route.points.shrink_to_fit();
         cloned_route
     }
-
-    fn clone_gpx(&self, src_gpx: &Gpx, route: &Route) -> Gpx {
-        let mut gpx = fit_bounds(src_gpx.clone(), &route.points);
-        gpx.routes.clear();
-        gpx.routes.push(route.to_owned());
-        gpx
-    }
 }
 
 //--------------------------------------------------------------
@@ -149,7 +145,12 @@ impl Splitter<Track> for TrackSplitter {
     /// If there is only one track, we did not split anything, so no need to write.
     ///
     fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> Result<(), Error> {
-        let clone = self.clone_gpx(gpx, track);
+        let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
+        let mut clone = fit_bounds(gpx.clone(), &points);
+        clone.tracks.clear();
+        clone.tracks.push(track.to_owned());
+        clone.tracks.shrink_to_fit();
+
         write_gpx(clone, path, index)
     }
 }
@@ -206,16 +207,6 @@ impl TrackSplitter {
         cloned_track.segments.shrink_to_fit();
 
         cloned_track
-    }
-
-    /// clone the source gpx and just clear the tracks to keep the rest
-    fn clone_gpx(&self, src_gpx: &Gpx, trace: &Track) -> Gpx {
-        let points:Vec<Waypoint> = trace.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
-        let mut gpx = fit_bounds(src_gpx.clone(), &points);
-        gpx.tracks.clear();
-        gpx.tracks.push(trace.to_owned());
-        gpx.tracks.shrink_to_fit();
-        gpx
     }
 }
 
