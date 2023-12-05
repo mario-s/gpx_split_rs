@@ -60,7 +60,7 @@ fn main() {
     };
     res.unwrap();
 
-    debug!("Splitting took {} milliseconds.", now.elapsed().as_millis());
+    debug!("Splitting took {} microseconds.", now.elapsed().as_micros());
 }
 
 fn create_limit(max: u32, by: By) -> Box<dyn Limit> {
