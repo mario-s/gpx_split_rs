@@ -2,7 +2,7 @@ use gpx::Gpx;
 use gpx::errors::GpxError;
 use gpx::read;
 use gpx::write;
-
+use log::debug;
 use std::io::{BufReader, Error, ErrorKind};
 use std::fs::File;
 
@@ -23,10 +23,13 @@ pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
 ///
 pub fn write_gpx(gpx: Gpx, path: &str, counter: usize) -> Result<(), Error> {
     let p = create_path(path, counter)?;
-    let file = File::create(p)?;
+    let file = File::create(&p)?;
         let res = write(&gpx, file);
         match res {
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                debug!("wrote file {}", p);
+                Ok(())
+            },
             Err(gpx_err) => Err(to_error(gpx_err))
         }
 }
