@@ -1,4 +1,5 @@
 use std::thread;
+use std::thread::JoinHandle;
 use std::io::Error;
 use log::debug;
 use gpx::{Gpx, Route, Track, TrackSegment, Waypoint};
@@ -32,9 +33,17 @@ impl<T> Context<T> {
     }
 
     fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {
-        traces.iter().enumerate().try_for_each(|(index, trace)| {
-            self.splitter.write(&self.path, &gpx, trace, index)
-        })?;
+        let mut handles = Vec::new();
+        for (index, trace) in traces.iter().enumerate() {
+            let handle = self.splitter.write(&self.path, &gpx, trace, index);
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            if let Err(err) = handle.join().unwrap() {
+                return Err(err);
+            }
+        }
 
         Ok(traces.len())
     }
@@ -47,7 +56,7 @@ impl<T> Context<T> {
 pub trait Splitter<T> {
     fn traces(&self, gpx: Gpx) -> Vec<T>;
     fn split(&self, origin: Vec<T>) -> Vec<T>;
-    fn write(&self, path: &str, gpx: &Gpx, trace: &T, counter: usize) -> Result<(), Error>;
+    fn write(&self, path: &str, gpx: &Gpx, trace: &T, counter: usize) -> JoinHandle<Result<(), Error>>;
 }
 
 /// Splitter for routes.
@@ -77,17 +86,16 @@ impl Splitter<Route> for RouteSplitter {
     /// Writes the given route(s) into new files, when there are more than one route.
     /// If there is only one route, we did not split anything, so no need to write.
     ///
-    fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> Result<(), Error> {
+    fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> JoinHandle<Result<(), Error>> {
         let path = path.to_string();
         let gpx = gpx.clone();
         let route = route.clone();
-        let handle = thread::spawn(move || {
+        thread::spawn(move || {
             let mut gpx = fit_bounds(gpx, &route.points);
             gpx.routes.clear();
             gpx.routes.push(route);
             write_gpx(gpx, &path, index)
-        });
-        handle.join().unwrap()
+        })
     }
 }
 
@@ -150,11 +158,11 @@ impl Splitter<Track> for TrackSplitter {
     /// Writes the given tracks into new files, when there are more than one route.
     /// If there is only one track, we did not split anything, so no need to write.
     ///
-    fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> Result<(), Error> {
+    fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> JoinHandle<Result<(), Error>> {
         let path = path.to_string();
         let gpx = gpx.clone();
         let track = track.clone();
-        let handle = thread::spawn(move || {
+        thread::spawn(move || {
             let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
             let mut gpx = fit_bounds(gpx, &points);
             gpx.tracks.clear();
@@ -162,8 +170,7 @@ impl Splitter<Track> for TrackSplitter {
             gpx.tracks.shrink_to_fit();
 
             write_gpx(gpx, &path, index)
-        });
-        handle.join().unwrap()
+        })
     }
 }
 
