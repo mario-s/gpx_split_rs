@@ -7,7 +7,7 @@ fn test_track_length() {
     let splitter = Box::new(TrackSplitter::new(
         Box::new(LengthLimit::new(1000))));
 
-    let ctx = Context::new(path, splitter);
+    let ctx = Context::new(path, None, splitter);
     let res = ctx.run().unwrap();
 
     assert_eq!(3, res);
@@ -19,7 +19,7 @@ fn test_track_points() {
     let splitter = Box::new(TrackSplitter::new(
     Box::new(PointsLimit::new(50))));
 
-    let ctx = Context::new(path, splitter);
+    let ctx = Context::new(path, None, splitter);
     let res = ctx.run().unwrap();
 
     assert_eq!(2, res);
@@ -31,7 +31,7 @@ fn test_route_length() {
     let splitter = Box::new(RouteSplitter::new(
     Box::new(LengthLimit::new(5000))));
 
-    let ctx = Context::new(path, splitter);
+    let ctx = Context::new(path, None, splitter);
     let res = ctx.run().unwrap();
 
     assert_eq!(3, res);
@@ -43,7 +43,7 @@ fn test_route_points() {
     let splitter = Box::new(RouteSplitter::new(
     Box::new(PointsLimit::new(40))));
 
-    let ctx = Context::new(path, splitter);
+    let ctx = Context::new(path, None, splitter);
     let res = ctx.run().unwrap();
 
     assert_eq!(2, res);

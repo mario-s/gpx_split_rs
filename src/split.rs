@@ -10,18 +10,19 @@ use crate::geo::fit_bounds;
 
 ///common context for splitters
 pub struct Context<T> {
-    path: String,
+    input_file: String,
+    output_file: Option<String>,
     splitter: Box<dyn Splitter<T>>,
 }
 
 impl<T> Context<T> {
 
-    pub fn new(path: String, splitter: Box<dyn Splitter<T>>) -> Self {
-        Context { path, splitter}
+    pub fn new(input_file: String, output_file: Option<String>, splitter: Box<dyn Splitter<T>>) -> Self {
+        Context { input_file, output_file, splitter}
     }
 
     pub fn run(&self) -> Result<usize, Error> {
-        let gpx = read_gpx(self.path.as_str())?;
+        let gpx = read_gpx(self.input_file.as_str())?;
         let origin = self.splitter.traces(gpx.clone());
         let len = origin.len();
         let new_traces = self.splitter.split(origin);
@@ -34,15 +35,14 @@ impl<T> Context<T> {
 
     fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {
         let mut handles = Vec::new();
+        let path = self.output_file.to_owned().unwrap_or(self.input_file.to_owned());
         for (index, trace) in traces.iter().enumerate() {
-            let handle = self.splitter.write(&self.path, &gpx, trace, index);
+            let handle = self.splitter.write(&path, &gpx, trace, index);
             handles.push(handle);
         }
 
         for handle in handles {
-            if let Err(err) = handle.join().unwrap() {
-                return Err(err);
-            }
+            handle.join().unwrap()?
         }
 
         Ok(traces.len())
