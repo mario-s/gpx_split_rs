@@ -42,9 +42,7 @@ impl<T> Context<T> {
         }
 
         for handle in handles {
-            if let Err(err) = handle.join().unwrap() {
-                return Err(err);
-            }
+            handle.join().unwrap()?
         }
 
         Ok(traces.len())
