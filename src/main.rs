@@ -71,6 +71,6 @@ fn create_limit(max: u32, by: By) -> Box<dyn Limit> {
 }
 
 fn run<T: 'static>(path: String, splitter: Box<dyn Splitter<T>>) -> Result<usize, Error> {
-    let c = Context::new(path, splitter);
+    let c = Context::new(path, None, splitter);
     c.run()
 }
