@@ -134,9 +134,9 @@ impl RouteSplitter {
         RouteSplitter { limit }
     }
 
-    fn clone_route(&self, src_route: &Route, points: &Vec<Waypoint>) -> Route {
+    fn clone_route(&self, src_route: &Route, points: &[Waypoint]) -> Route {
         let mut cloned_route = src_route.clone();
-        cloned_route.points = points.clone();
+        cloned_route.points = points.to_vec();
         cloned_route
     }
 }
@@ -210,9 +210,9 @@ impl TrackSplitter {
 
     /// clone the source track and add new track segment with the points
     ///
-    fn clone_track(&self, src_track: &Track, points: &Vec<Waypoint>) -> Track {
+    fn clone_track(&self, src_track: &Track, points: &[Waypoint]) -> Track {
         let mut track_segment = TrackSegment::new();
-        track_segment.points = points.clone();
+        track_segment.points = points.to_vec();
 
         let mut cloned_track = src_track.clone();
         cloned_track.segments.clear();
