@@ -34,16 +34,13 @@ impl<T> Context<T> {
     }
 
     fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {
-        let mut handles = Vec::new();
         let path = self.output_file.to_owned().unwrap_or(self.input_file.to_owned());
-        for (index, trace) in traces.iter().enumerate() {
-            let handle = self.splitter.write(&path, &gpx, trace, index);
-            handles.push(handle);
-        }
 
-        for handle in handles {
-            handle.join().unwrap()?
-        }
+        let handles = traces.iter().enumerate().map(|(index, trace )| {
+            self.splitter.write(&path, &gpx, trace, index)
+        });
+
+        handles.into_iter().map(|h| h.join()).try_for_each(Result::unwrap)?;
 
         Ok(traces.len())
     }
@@ -84,7 +81,7 @@ impl Splitter<Route> for RouteSplitter {
     fn split(&self, routes: &[Route]) -> Vec<Route> {
         let mut new_routes = Vec::new();
         let mut points = Vec::new();
-        for route in routes {
+        routes.iter().for_each(|route| {
             route.points.iter().for_each(|point| {
                 points.push(point.clone());
 
@@ -97,7 +94,8 @@ impl Splitter<Route> for RouteSplitter {
                     points.push(point.to_owned());
                 }
             });
-        }
+        });
+
         //this condition will be true in most cases
         //but it can happen that we split at the end of a route, in this case we have only one point
         if points.len() > 1 {
@@ -154,7 +152,7 @@ impl Splitter<Track> for TrackSplitter {
     fn split(&self, tracks: &[Track]) -> Vec<Track> {
         let mut new_tracks = Vec::new();
         let mut points = Vec::new();
-        for track in tracks {
+        tracks.iter().for_each(|track| {
             track.segments.iter()
             .flat_map(|segment| segment.points.iter().cloned())
             .for_each(|point| {
@@ -170,7 +168,7 @@ impl Splitter<Track> for TrackSplitter {
                     points.push(point);
                 }
             });
-        }
+        });
         //this condition will be true in most cases
         //but it can happen that we split at the end of a track, in this case we have only one point
         if points.len() > 1 {
