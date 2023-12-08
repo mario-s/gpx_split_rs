@@ -1,51 +1,17 @@
-use std::fmt::Debug;
 use gpx::Waypoint;
 
 use crate::geo::distance_points;
 
-/// checks if the points exceed a defined limit.
-pub trait Limit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool;
-}
-
-//-------------------------------------------------
-
-/// strategy to check limit based on the number of points
+/// creates a closure that returns true when the amount of points
+/// is equal or greater than max
 ///
-#[derive(Debug, Clone)]
-pub struct PointsLimit {
-    max_points: u32,
+pub fn points(max: u32) -> Box<dyn Fn(&[Waypoint]) -> bool> {
+    Box::new(move |points| points.len() >= max as usize)
 }
 
-impl PointsLimit {
-    pub fn new(max_points: u32) -> Self {
-        PointsLimit { max_points }
-    }
-}
-
-impl Limit for PointsLimit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
-        points.len() >= self.max_points.try_into().unwrap()
-    }
-}
-
-//-------------------------------------------------
-
-/// strategy to check limit based on the length of the sum of the distances between the points
+/// creates a closure that returns true when the sum of the distance between all points
+/// is greater tham max
 ///
-#[derive(Debug, Clone)]
-pub struct LengthLimit {
-    max_length: u32,
-}
-
-impl LengthLimit {
-    pub fn new(max_length: u32) -> Self {
-        LengthLimit { max_length }
-    }
-}
-
-impl Limit for LengthLimit {
-    fn exceeds_limit(&self, points: &[Waypoint]) -> bool {
-        distance_points(points) > self.max_length.into()
-    }
+pub fn length(max: u32) -> Box<dyn Fn(&[Waypoint]) -> bool> {
+    Box::new(move |points| distance_points(points) > max.into())
 }

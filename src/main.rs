@@ -2,10 +2,9 @@ use std::io::Error;
 use std::time::Instant;
 use clap::{Parser, ValueEnum};
 use log::debug;
-use gpx::Waypoint;
 
 use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter, Context};
-use gpx_split::geo::distance_points;
+use gpx_split::limit;
 
 
 
@@ -59,7 +58,11 @@ fn main() {
     let max = args.max;
     let out = args.output;
 
-    let limit = create_limit(max, by);
+    let limit =     match by {
+        By::Len => limit::points(max),
+        By::Point => limit::length(max),
+    };
+
     let res = match trace {
         Trace::Route => run(path.clone(), out, Box::new(RouteSplitter::new(limit))),
         Trace::Track => run(path.clone(), out, Box::new(TrackSplitter::new(limit))),
@@ -67,13 +70,6 @@ fn main() {
     res.unwrap();
 
     debug!("Splitting took {} microseconds.", now.elapsed().as_micros());
-}
-
-fn create_limit(max: u32, by: By) -> Box<dyn Fn(&[Waypoint]) -> bool> {
-    match by {
-        By::Len => Box::new(move |points| points.len() >= max as usize),
-        By::Point => Box::new(move |points| distance_points(points) > max.into())
-    }
 }
 
 fn run<T: 'static>(path: String, output: Option<String>, splitter: Box<dyn Splitter<T>>) -> Result<usize, Error> {
