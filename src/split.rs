@@ -25,7 +25,7 @@ impl<T> Context<T> {
         let gpx = read_gpx(self.input_file.as_str())?;
         let origin = self.splitter.traces(gpx.clone());
         let len = origin.len();
-        let new_traces = self.splitter.split(origin);
+        let new_traces = self.splitter.split(&origin);
         if new_traces.len() > len {
             debug!("{} traces after splitting", new_traces.len());
             return self.write(gpx, new_traces)
@@ -55,7 +55,7 @@ impl<T> Context<T> {
 ///
 pub trait Splitter<T> {
     fn traces(&self, gpx: Gpx) -> Vec<T>;
-    fn split(&self, origin: Vec<T>) -> Vec<T>;
+    fn split(&self, origin: &Vec<T>) -> Vec<T>;
     fn write(&self, path: &str, gpx: &Gpx, trace: &T, counter: usize) -> JoinHandle<Result<(), Error>>;
 }
 
@@ -79,35 +79,11 @@ impl Splitter<Route> for RouteSplitter {
         gpx.routes
     }
 
-    fn split(&self, origin: Vec<Route>) -> Vec<Route> {
-        self.spilt_routes(&origin)
-    }
-
-    /// Writes the given route(s) into new files, when there are more than one route.
-    /// If there is only one route, we did not split anything, so no need to write.
+    /// splits the given routes into new routes where the number of points of that route are limted
     ///
-    fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> JoinHandle<Result<(), Error>> {
-        let path = path.to_string();
-        let gpx = gpx.clone();
-        let route = route.clone();
-        thread::spawn(move || {
-            let mut gpx = fit_bounds(gpx, &route.points);
-            gpx.routes.clear();
-            gpx.routes.push(route);
-            write_gpx(gpx, &path, index)
-        })
-    }
-}
-
-impl RouteSplitter {
-
-    pub fn new(limit: Box<dyn Limit>) -> Self {
-        RouteSplitter { limit }
-    }
-
-    fn spilt_routes(&self, routes: &Vec<Route>) -> Vec<Route> {
-        let mut new_routes = vec![];
-        let mut points = vec![];
+    fn split(&self, routes: &Vec<Route>) -> Vec<Route> {
+        let mut new_routes = Vec::new();
+        let mut points = Vec::new();
         for route in routes {
             route.points.iter().for_each(|point| {
                 points.push(point.clone());
@@ -134,6 +110,28 @@ impl RouteSplitter {
         new_routes
     }
 
+    /// Writes the given route(s) into new files, when there are more than one route.
+    /// If there is only one route, we did not split anything, so no need to write.
+    ///
+    fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> JoinHandle<Result<(), Error>> {
+        let path = path.to_string();
+        let gpx = gpx.clone();
+        let route = route.clone();
+        thread::spawn(move || {
+            let mut gpx = fit_bounds(gpx, &route.points);
+            gpx.routes.clear();
+            gpx.routes.push(route);
+            write_gpx(gpx, &path, index)
+        })
+    }
+}
+
+impl RouteSplitter {
+
+    pub fn new(limit: Box<dyn Limit>) -> Self {
+        RouteSplitter { limit }
+    }
+
     fn clone_route(&self, src_route: &Route, points: &mut Vec<Waypoint>) -> Route {
         let mut cloned_route = src_route.clone();
         cloned_route.points.clear();
@@ -151,40 +149,11 @@ impl Splitter<Track> for TrackSplitter {
         gpx.tracks
     }
 
-    fn split(&self, origin: Vec<Track>) -> Vec<Track> {
-        self.spilt_tracks(&origin)
-    }
-
-    /// Writes the given tracks into new files, when there are more than one route.
-    /// If there is only one track, we did not split anything, so no need to write.
-    ///
-    fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> JoinHandle<Result<(), Error>> {
-        let path = path.to_string();
-        let gpx = gpx.clone();
-        let track = track.clone();
-        thread::spawn(move || {
-            let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
-            let mut gpx = fit_bounds(gpx, &points);
-            gpx.tracks.clear();
-            gpx.tracks.push(track);
-            gpx.tracks.shrink_to_fit();
-
-            write_gpx(gpx, &path, index)
-        })
-    }
-}
-
-impl TrackSplitter {
-
-    pub fn new(limit: Box<dyn Limit>) -> Self {
-        TrackSplitter {limit }
-    }
-
     /// splits the given tracks into new tracks where the number of points of that tracks are limted
     ///
-    fn spilt_tracks(&self, tracks: &Vec<Track>) -> Vec<Track> {
-        let mut new_tracks = vec![];
-        let mut points = vec![];
+    fn split(&self, tracks: &Vec<Track>) -> Vec<Track> {
+        let mut new_tracks = Vec::new();
+        let mut points = Vec::new();
         for track in tracks {
             track.segments.iter()
             .flat_map(|segment| segment.points.iter().cloned())
@@ -214,6 +183,31 @@ impl TrackSplitter {
         new_tracks
     }
 
+    /// Writes the given tracks into new files, when there are more than one route.
+    /// If there is only one track, we did not split anything, so no need to write.
+    ///
+    fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> JoinHandle<Result<(), Error>> {
+        let path = path.to_string();
+        let gpx = gpx.clone();
+        let track = track.clone();
+        thread::spawn(move || {
+            let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
+            let mut gpx = fit_bounds(gpx, &points);
+            gpx.tracks.clear();
+            gpx.tracks.push(track);
+            gpx.tracks.shrink_to_fit();
+
+            write_gpx(gpx, &path, index)
+        })
+    }
+}
+
+impl TrackSplitter {
+
+    pub fn new(limit: Box<dyn Limit>) -> Self {
+        TrackSplitter {limit }
+    }
+
     /// clone the source track and add new track segment with the points
     ///
     fn clone_track(&self, src_track: &Track, points: &Vec<Waypoint>) -> Track {
@@ -235,13 +229,13 @@ impl TrackSplitter {
 mod tests {
     use gpx::{Route, Track, TrackSegment, Waypoint};
     use crate::limit::PointsLimit;
-    use crate::split::{RouteSplitter, TrackSplitter};
+    use crate::split::{Splitter, RouteSplitter, TrackSplitter};
 
     #[test]
     fn test_split_route_0() {
         let route = Route::new();
 
-        let routes = new_route_splitter(0).spilt_routes(&vec![route]);
+        let routes = new_route_splitter(0).split(&vec![route]);
 
         assert_eq!(0, routes.len());
     }
@@ -250,7 +244,7 @@ mod tests {
     fn test_split_route_1() {
         let route = new_route(4);
 
-        let routes = new_route_splitter(4).spilt_routes(&vec![route]);
+        let routes = new_route_splitter(4).split(&vec![route]);
 
         assert_eq!(1, routes.len());
     }
@@ -259,7 +253,7 @@ mod tests {
     fn test_split_route_3() {
         let route = new_route(4);
 
-        let routes = new_route_splitter(2).spilt_routes(&vec![route]);
+        let routes = new_route_splitter(2).split(&vec![route]);
 
         assert_eq!(3, routes.len());
         let first_points = routes.first().map(|r| r.points.clone()).unwrap();
@@ -278,9 +272,9 @@ mod tests {
         route
     }
 
-    fn new_route_splitter(max: u32) -> RouteSplitter {
+    fn new_route_splitter(max: u32) -> Box<dyn Splitter<Route>> {
         let lim = Box::new(PointsLimit::new(max));
-        RouteSplitter::new(lim)
+        Box::new(RouteSplitter::new(lim))
     }
 
     //--------------------------------------------------------------
@@ -289,7 +283,7 @@ mod tests {
     fn test_split_track_0() {
         let track = Track::new();
 
-        let tracks = new_track_splitter(0).spilt_tracks(&vec![track]);
+        let tracks = new_track_splitter(0).split(&vec![track]);
 
         assert_eq!(0, tracks.len());
     }
@@ -298,7 +292,7 @@ mod tests {
     fn test_split_track_1() {
         let track = new_track(4);
 
-        let tracks = new_track_splitter(4).spilt_tracks(&vec![track]);
+        let tracks = new_track_splitter(4).split(&vec![track]);
 
         assert_eq!(1, tracks.len());
     }
@@ -307,7 +301,7 @@ mod tests {
     fn test_split_track_3() {
         let track = new_track(4);
 
-        let tracks = new_track_splitter(2).spilt_tracks(&vec![track]);
+        let tracks = new_track_splitter(2).split(&vec![track]);
 
         //expect 2 tracks with 1 segment each containing 2 points
         assert_eq!(3, tracks.len());
@@ -333,9 +327,9 @@ mod tests {
         track
     }
 
-    fn new_track_splitter(max: u32) -> TrackSplitter {
+    fn new_track_splitter(max: u32) -> Box<dyn Splitter<Track>> {
         let lim = Box::new(PointsLimit::new(max));
-        TrackSplitter::new(lim)
+        Box::new(TrackSplitter::new(lim))
     }
 
     fn assert_points(first_points: Vec<Waypoint>, middle_points: Vec<Waypoint>, last_points: Vec<Waypoint>) {
