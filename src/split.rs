@@ -36,11 +36,9 @@ impl<T> Context<T> {
     fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {
         let path = self.output_file.to_owned().unwrap_or(self.input_file.to_owned());
 
-        let handles = traces.iter().enumerate().map(|(index, trace )| {
+        traces.iter().enumerate().map(|(index, trace )| {
             self.splitter.write(&path, &gpx, trace, index)
-        });
-
-        handles.into_iter().map(|h| h.join()).try_for_each(Result::unwrap)?;
+        }).map(|h| h.join()).try_for_each(Result::unwrap)?;
 
         Ok(traces.len())
     }
