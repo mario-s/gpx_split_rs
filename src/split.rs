@@ -235,7 +235,7 @@ mod tests {
     fn test_split_route_0() {
         let route = Route::new();
 
-        let routes = new_route_splitter(0).split(&vec![route]);
+        let routes = new_route_splitter(0).split(&[route]);
 
         assert_eq!(0, routes.len());
     }
@@ -244,7 +244,7 @@ mod tests {
     fn test_split_route_1() {
         let route = new_route(4);
 
-        let routes = new_route_splitter(4).split(&vec![route]);
+        let routes = new_route_splitter(4).split(&[route]);
 
         assert_eq!(1, routes.len());
     }
@@ -253,7 +253,7 @@ mod tests {
     fn test_split_route_3() {
         let route = new_route(4);
 
-        let routes = new_route_splitter(2).split(&vec![route]);
+        let routes = new_route_splitter(2).split(&[route]);
 
         assert_eq!(3, routes.len());
         let first_points = routes.first().map(|r| r.points.clone()).unwrap();
@@ -283,7 +283,7 @@ mod tests {
     fn test_split_track_0() {
         let track = Track::new();
 
-        let tracks = new_track_splitter(0).split(&vec![track]);
+        let tracks = new_track_splitter(0).split(&[track]);
 
         assert_eq!(0, tracks.len());
     }
@@ -292,7 +292,7 @@ mod tests {
     fn test_split_track_1() {
         let track = new_track(4);
 
-        let tracks = new_track_splitter(4).split(&vec![track]);
+        let tracks = new_track_splitter(4).split(&[track]);
 
         assert_eq!(1, tracks.len());
     }
@@ -301,7 +301,7 @@ mod tests {
     fn test_split_track_3() {
         let track = new_track(4);
 
-        let tracks = new_track_splitter(2).split(&vec![track]);
+        let tracks = new_track_splitter(2).split(&[track]);
 
         //expect 2 tracks with 1 segment each containing 2 points
         assert_eq!(3, tracks.len());
