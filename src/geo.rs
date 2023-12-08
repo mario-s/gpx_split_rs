@@ -85,7 +85,7 @@ mod tests {
         let gpx_ref = &mut gpx;
         gpx_ref.metadata = Some(meta);
 
-        let res = fit_bounds(gpx_ref.to_owned(), &vec![]);
+        let res = fit_bounds(gpx_ref.clone(), &vec![]);
         assert_eq!(None, res.metadata.and_then(|m| m.bounds))
     }
 

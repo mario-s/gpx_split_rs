@@ -34,11 +34,17 @@ impl<T> Context<T> {
     }
 
     fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {
-        let path = self.output_file.to_owned().unwrap_or(self.input_file.to_owned());
+        let mut handles = Vec::new();
+        let path = self.output_file.clone().unwrap_or(self.input_file.clone());
 
-        traces.iter().enumerate().map(|(index, trace )| {
-            self.splitter.write(&path, &gpx, trace, index)
-        }).map(|h| h.join()).try_for_each(Result::unwrap)?;
+        traces.iter().enumerate().for_each(|(index, trace)| {
+            let h = self.splitter.write(&path, &gpx, trace, index);
+            handles.push(h);
+        });
+
+        for handle in handles {
+            handle.join().unwrap()?;
+        }
 
         Ok(traces.len())
     }
@@ -84,12 +90,12 @@ impl Splitter<Route> for RouteSplitter {
                 points.push(point.clone());
 
                 if self.limit.exceeds(&points) {
-                    let new_route = self.clone_route(route, &mut points);
+                    let new_route = self.clone_route(route, &points);
                     new_routes.push(new_route);
 
+                    //clear vec starting with current
                     points.clear();
-                    //add current point as first one to new segment
-                    points.push(point.to_owned());
+                    points.push(point.clone());
                 }
             });
         });
@@ -98,7 +104,7 @@ impl Splitter<Route> for RouteSplitter {
         //but it can happen that we split at the end of a route, in this case we have only one point
         if points.len() > 1 {
             if let Some(last) = routes.last() {
-                let new_route = self.clone_route(last, &mut points);
+                let new_route = self.clone_route(last, &points);
                 new_routes.push(new_route);
             }
         }
@@ -128,11 +134,9 @@ impl RouteSplitter {
         RouteSplitter { limit }
     }
 
-    fn clone_route(&self, src_route: &Route, points: &mut Vec<Waypoint>) -> Route {
+    fn clone_route(&self, src_route: &Route, points: &Vec<Waypoint>) -> Route {
         let mut cloned_route = src_route.clone();
-        cloned_route.points.clear();
-        cloned_route.points.append(points);
-        cloned_route.points.shrink_to_fit();
+        cloned_route.points = points.clone();
         cloned_route
     }
 }
@@ -152,7 +156,7 @@ impl Splitter<Track> for TrackSplitter {
         let mut points = Vec::new();
         tracks.iter().for_each(|track| {
             track.segments.iter()
-            .flat_map(|segment| segment.points.iter().cloned())
+            .flat_map(|segment| segment.points.iter())
             .for_each(|point| {
                 points.push(point.clone());
 
@@ -161,9 +165,9 @@ impl Splitter<Track> for TrackSplitter {
                     let new_track = self.clone_track(track, &points);
                     new_tracks.push(new_track);
 
+                    //clear vec starting with current
                     points.clear();
-                    //add current point as first one to new segment
-                    points.push(point);
+                    points.push(point.clone());
                 }
             });
         });
@@ -208,7 +212,7 @@ impl TrackSplitter {
     ///
     fn clone_track(&self, src_track: &Track, points: &Vec<Waypoint>) -> Track {
         let mut track_segment = TrackSegment::new();
-        track_segment.points.append(&mut points.to_owned());
+        track_segment.points = points.clone();
 
         let mut cloned_track = src_track.clone();
         cloned_track.segments.clear();
