@@ -2,9 +2,11 @@ use std::io::Error;
 use std::time::Instant;
 use clap::{Parser, ValueEnum};
 use log::debug;
+use gpx::Waypoint;
 
 use gpx_split::split::{Splitter, TrackSplitter, RouteSplitter, Context};
-use gpx_split::limit::{LengthLimit, PointsLimit, Limit};
+use gpx_split::geo::distance_points;
+
 
 
 /// A program to split a GPX file into smaller chunks
@@ -67,10 +69,10 @@ fn main() {
     debug!("Splitting took {} microseconds.", now.elapsed().as_micros());
 }
 
-fn create_limit(max: u32, by: By) -> Box<dyn Limit> {
+fn create_limit(max: u32, by: By) -> Box<dyn Fn(&[Waypoint]) -> bool> {
     match by {
-        By::Len => Box::new(LengthLimit::new(max)),
-        By::Point => Box::new(PointsLimit::new(max))
+        By::Len => Box::new(move |points| points.len() >= max as usize),
+        By::Point => Box::new(move |points| distance_points(points) > max.into())
     }
 }
 

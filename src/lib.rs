@@ -1,4 +1,4 @@
 pub mod split;
 pub mod limit;
-mod geo;
+pub mod geo;
 mod io;

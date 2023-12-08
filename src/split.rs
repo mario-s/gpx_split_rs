@@ -4,7 +4,6 @@ use std::io::Error;
 use log::debug;
 use gpx::{Gpx, Route, Track, TrackSegment, Waypoint};
 
-use crate::limit::Limit;
 use crate::io::*;
 use crate::geo::fit_bounds;
 
@@ -57,13 +56,13 @@ pub trait Splitter<T> {
 /// Splitter for routes.
 ///
 pub struct RouteSplitter {
-    limit: Box<dyn Limit>,
+    limit: Box<dyn Fn(&[Waypoint]) -> bool>,
 }
 
 /// Splitter for tracks.
 ///
 pub struct TrackSplitter {
-    limit: Box<dyn Limit>,
+    limit: Box<dyn Fn(&[Waypoint]) -> bool>,
 }
 
 //--------------------------------------------------------------
@@ -83,7 +82,7 @@ impl Splitter<Route> for RouteSplitter {
             route.points.iter().for_each(|point| {
                 points.push(point.clone());
 
-                if self.limit.exceeds_limit(&points) {
+                if (self.limit)(&points) {
                     let new_route = self.clone_route(route, &mut points);
                     new_routes.push(new_route);
 
@@ -124,7 +123,7 @@ impl Splitter<Route> for RouteSplitter {
 
 impl RouteSplitter {
 
-    pub fn new(limit: Box<dyn Limit>) -> Self {
+    pub fn new(limit: Box<dyn Fn(&[Waypoint]) -> bool>) -> Self {
         RouteSplitter { limit }
     }
 
@@ -157,7 +156,7 @@ impl Splitter<Track> for TrackSplitter {
                 points.push(point.clone());
 
                 //create a new track when the points exceed a limit
-                if self.limit.exceeds_limit(&points) {
+                if (self.limit)(&points) {
                     let new_track = self.clone_track(track, &points);
                     new_tracks.push(new_track);
 
@@ -200,7 +199,7 @@ impl Splitter<Track> for TrackSplitter {
 
 impl TrackSplitter {
 
-    pub fn new(limit: Box<dyn Limit>) -> Self {
+    pub fn new(limit: Box<dyn Fn(&[Waypoint]) -> bool>) -> Self {
         TrackSplitter {limit }
     }
 
@@ -224,7 +223,6 @@ impl TrackSplitter {
 #[cfg(test)]
 mod tests {
     use gpx::{Route, Track, TrackSegment, Waypoint};
-    use crate::limit::PointsLimit;
     use crate::split::{Splitter, RouteSplitter, TrackSplitter};
 
     #[test]
@@ -269,8 +267,7 @@ mod tests {
     }
 
     fn new_route_splitter(max: u32) -> Box<dyn Splitter<Route>> {
-        let lim = Box::new(PointsLimit::new(max));
-        Box::new(RouteSplitter::new(lim))
+        Box::new(RouteSplitter::new(create_limit(max)))
     }
 
     //--------------------------------------------------------------
@@ -324,8 +321,13 @@ mod tests {
     }
 
     fn new_track_splitter(max: u32) -> Box<dyn Splitter<Track>> {
-        let lim = Box::new(PointsLimit::new(max));
-        Box::new(TrackSplitter::new(lim))
+        Box::new(TrackSplitter::new(create_limit(max)))
+    }
+
+    //----------------------------------------------------------
+
+    fn create_limit(max: u32) -> Box<dyn Fn(&[Waypoint]) -> bool> {
+        Box::new(move |points| points.len() >= max as usize)
     }
 
     fn assert_points(first_points: Vec<Waypoint>, middle_points: Vec<Waypoint>, last_points: Vec<Waypoint>) {
