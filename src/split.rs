@@ -55,7 +55,7 @@ impl<T> Context<T> {
 ///
 pub trait Splitter<T> {
     fn traces(&self, gpx: Gpx) -> Vec<T>;
-    fn split(&self, origin: &Vec<T>) -> Vec<T>;
+    fn split(&self, origin: &[T]) -> Vec<T>;
     fn write(&self, path: &str, gpx: &Gpx, trace: &T, counter: usize) -> JoinHandle<Result<(), Error>>;
 }
 
@@ -81,7 +81,7 @@ impl Splitter<Route> for RouteSplitter {
 
     /// splits the given routes into new routes where the number of points of that route are limted
     ///
-    fn split(&self, routes: &Vec<Route>) -> Vec<Route> {
+    fn split(&self, routes: &[Route]) -> Vec<Route> {
         let mut new_routes = Vec::new();
         let mut points = Vec::new();
         for route in routes {
@@ -151,7 +151,7 @@ impl Splitter<Track> for TrackSplitter {
 
     /// splits the given tracks into new tracks where the number of points of that tracks are limted
     ///
-    fn split(&self, tracks: &Vec<Track>) -> Vec<Track> {
+    fn split(&self, tracks: &[Track]) -> Vec<Track> {
         let mut new_tracks = Vec::new();
         let mut points = Vec::new();
         for track in tracks {
