@@ -83,7 +83,7 @@ impl Splitter<Route> for RouteSplitter {
             route.points.iter().for_each(|point| {
                 points.push(point.clone());
 
-                if self.limit.exceeds_limit(&points) {
+                if self.limit.exceeds(&points) {
                     let new_route = self.clone_route(route, &mut points);
                     new_routes.push(new_route);
 
@@ -157,7 +157,7 @@ impl Splitter<Track> for TrackSplitter {
                 points.push(point.clone());
 
                 //create a new track when the points exceed a limit
-                if self.limit.exceeds_limit(&points) {
+                if self.limit.exceeds(&points) {
                     let new_track = self.clone_track(track, &points);
                     new_tracks.push(new_track);
 
