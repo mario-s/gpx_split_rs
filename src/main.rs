@@ -59,8 +59,8 @@ fn main() {
     let out = args.output;
 
     let limit =     match by {
-        By::Len => limit::points(max),
-        By::Point => limit::length(max),
+        By::Len => limit::length(max),
+        By::Point => limit::points(max),
     };
 
     let res = match trace {
