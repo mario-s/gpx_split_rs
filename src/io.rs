@@ -1,10 +1,10 @@
-use gpx::Gpx;
 use gpx::errors::GpxError;
 use gpx::read;
 use gpx::write;
+use gpx::Gpx;
 use log::debug;
-use std::io::{BufReader, Error, ErrorKind};
 use std::fs::File;
+use std::io::{BufReader, Error, ErrorKind};
 
 /// Reads Gpx data from the given path.
 ///
@@ -14,7 +14,7 @@ pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
 
     match read(reader) {
         Ok(gpx) => Ok(gpx),
-        Err(gpx_err) => Err(to_error(gpx_err))
+        Err(gpx_err) => Err(to_error(gpx_err)),
     }
 }
 
@@ -25,14 +25,14 @@ pub fn write_gpx(mut gpx: Gpx, path: &str, counter: usize) -> Result<(), Error> 
     gpx = update_metadata_name(gpx, counter);
     let p = create_path(path, counter)?;
     let file = File::create(&p)?;
-        let res = write(&gpx, file);
-        match res {
-            Ok(_) => {
-                debug!("wrote file {}", p);
-                Ok(())
-            },
-            Err(gpx_err) => Err(to_error(gpx_err))
+    let res = write(&gpx, file);
+    match res {
+        Ok(_) => {
+            debug!("wrote file {}", p);
+            Ok(())
         }
+        Err(gpx_err) => Err(to_error(gpx_err)),
+    }
 }
 
 fn update_metadata_name(mut gpx: Gpx, counter: usize) -> Gpx {
@@ -52,7 +52,10 @@ pub fn append_index_to_name(name: Option<String>, index: usize) -> Option<String
 fn create_path(path: &str, counter: usize) -> Result<String, Error> {
     let parts: Vec<&str> = path.rsplitn(2, '.').collect();
     if parts.len() != 2 {
-        return Err(Error::new(ErrorKind::InvalidInput, format!("invalid file: {}", path)));
+        return Err(Error::new(
+            ErrorKind::InvalidInput,
+            format!("invalid file: {}", path),
+        ));
     }
     //new file name would be like foo_1.gpx
     let name = format!("{}_{}.{}", parts[1], counter, parts[0]);
@@ -71,8 +74,14 @@ mod tests {
     use crate::io::*;
     #[test]
     fn test_update_metadata_name() {
-        let meta = Metadata{name: Some("bar".to_string()), ..Default::default()};
-        let mut gpx: Gpx = Gpx {metadata: Some(meta), ..Default::default()};
+        let meta = Metadata {
+            name: Some("bar".to_string()),
+            ..Default::default()
+        };
+        let mut gpx: Gpx = Gpx {
+            metadata: Some(meta),
+            ..Default::default()
+        };
 
         gpx = update_metadata_name(gpx, 1);
         let res = gpx.metadata.unwrap().name.unwrap();

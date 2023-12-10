@@ -1,8 +1,8 @@
-use gpx::{Gpx, Waypoint};
 use geo_types::{coord, Rect};
+use gpx::{Gpx, Waypoint};
+use haversine_rs::distance_vec;
 use haversine_rs::point::Point;
 use haversine_rs::units::Unit;
-use haversine_rs::distance_vec;
 
 /// Calculates the distance of all waypoints in the track.
 /// Returns result in Meter.
@@ -40,30 +40,46 @@ fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
     }
 
     let points = collect_points(way_points);
-    let min_x = points.iter().map(|p| p.latitude).fold(f64::INFINITY, f64::min);
-    let max_x = points.iter().map(|p| p.latitude).fold(f64::NEG_INFINITY, f64::max);
-    let min_y = points.iter().map(|p| p.longitude).fold(f64::INFINITY, f64::min);
-    let max_y = points.iter().map(|p| p.longitude).fold(f64::NEG_INFINITY, f64::max);
+    let min_x = points
+        .iter()
+        .map(|p| p.latitude)
+        .fold(f64::INFINITY, f64::min);
+    let max_x = points
+        .iter()
+        .map(|p| p.latitude)
+        .fold(f64::NEG_INFINITY, f64::max);
+    let min_y = points
+        .iter()
+        .map(|p| p.longitude)
+        .fold(f64::INFINITY, f64::min);
+    let max_y = points
+        .iter()
+        .map(|p| p.longitude)
+        .fold(f64::NEG_INFINITY, f64::max);
     Some(Rect::new(
         coord! { x: min_x, y: min_y },
-        coord! { x: max_x, y: max_y }
+        coord! { x: max_x, y: max_y },
     ))
 }
 
 /// Collect the points (x, y) from the given way points
 ///
 fn collect_points(way_points: &[Waypoint]) -> Vec<Point> {
-    way_points.iter().map(|p| p.point()).map(|p| Point::new(p.x(), p.y())).collect()
+    way_points
+        .iter()
+        .map(|p| p.point())
+        .map(|p| Point::new(p.x(), p.y()))
+        .collect()
 }
 
 #[cfg(test)]
 mod tests {
-    use gpx::{Gpx, Metadata, Waypoint};
-    use geo_types::{coord, Rect};
     use geo_types::Point as GeoPoint;
+    use geo_types::{coord, Rect};
+    use gpx::{Gpx, Metadata, Waypoint};
     use haversine_rs::point::Point as HavPoint;
 
-    use crate::geo::{fit_bounds, distance, find_bounds};
+    use crate::geo::{distance, find_bounds, fit_bounds};
 
     #[test]
     fn test_distance() {
@@ -76,10 +92,7 @@ mod tests {
     #[test]
     fn test_fit_bounds() {
         let mut meta = Metadata::default();
-        let rect = Rect::new(
-                coord! { x: 10., y: 20. },
-                coord! { x: 30., y: 10. }
-            );
+        let rect = Rect::new(coord! { x: 10., y: 20. }, coord! { x: 30., y: 10. });
         meta.bounds = Some(rect);
         let mut gpx = Gpx::default();
         let gpx_ref = &mut gpx;

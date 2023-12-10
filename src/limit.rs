@@ -1,6 +1,6 @@
-use std::fmt::Debug;
 use gpx::Waypoint;
 use log::debug;
+use std::fmt::Debug;
 
 use crate::geo::distance_points;
 
