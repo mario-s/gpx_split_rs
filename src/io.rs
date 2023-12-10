@@ -21,7 +21,8 @@ pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
 /// Writes the Gpx into a new file pased on the given path
 /// while appending the counter to the filename.
 ///
-pub fn write_gpx(gpx: Gpx, path: &str, counter: usize) -> Result<(), Error> {
+pub fn write_gpx(mut gpx: Gpx, path: &str, counter: usize) -> Result<(), Error> {
+    gpx = update_metadata_name(gpx, counter);
     let p = create_path(path, counter)?;
     let file = File::create(&p)?;
         let res = write(&gpx, file);
@@ -32,6 +33,18 @@ pub fn write_gpx(gpx: Gpx, path: &str, counter: usize) -> Result<(), Error> {
             },
             Err(gpx_err) => Err(to_error(gpx_err))
         }
+}
+
+fn update_metadata_name(mut gpx: Gpx, counter: usize) -> Gpx {
+    gpx.metadata = gpx.metadata.map(|mut meta| {
+        meta.name = append_index_to_name(meta.name, counter);
+        meta
+    });
+    gpx
+}
+
+pub fn append_index_to_name(name: Option<String>, index: usize) -> Option<String> {
+    name.map(|n| format!("{} #{}", n, index))
 }
 
 /// creates a new path to a file
@@ -51,8 +64,24 @@ fn to_error(gpx_err: GpxError) -> Error {
     Error::new(ErrorKind::Other, gpx_err.to_string())
 }
 
-#[test]
-fn test_create_path() {
-    let res = create_path("foo/bar.gpx", 1).unwrap();
-    assert_eq!("foo/bar_1.gpx", res);
+#[cfg(test)]
+mod tests {
+    use gpx::{Gpx, Metadata};
+
+    use crate::io::*;
+    #[test]
+    fn test_update_metadata_name() {
+        let meta = Metadata{name: Some("bar".to_string()), ..Default::default()};
+        let mut gpx: Gpx = Gpx {metadata: Some(meta), ..Default::default()};
+
+        gpx = update_metadata_name(gpx, 1);
+        let res = gpx.metadata.unwrap().name.unwrap();
+        assert_eq!("bar #1", res);
+    }
+
+    #[test]
+    fn test_create_path() {
+        let res = create_path("foo/bar.gpx", 1).unwrap();
+        assert_eq!("foo/bar_1.gpx", res);
+    }
 }

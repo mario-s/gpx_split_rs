@@ -118,9 +118,10 @@ impl Splitter<Route> for RouteSplitter {
     fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> JoinHandle<Result<(), Error>> {
         let path = path.to_string();
         let gpx = gpx.clone();
-        let route = route.clone();
+        let mut route = route.clone();
         thread::spawn(move || {
             let mut gpx = fit_bounds(gpx, &route.points);
+            route.name = append_index_to_name(route.name, index);
             gpx.routes.clear();
             gpx.routes.push(route);
             write_gpx(gpx, &path, index)
@@ -189,10 +190,11 @@ impl Splitter<Track> for TrackSplitter {
     fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> JoinHandle<Result<(), Error>> {
         let path = path.to_string();
         let gpx = gpx.clone();
-        let track = track.clone();
+        let mut track = track.clone();
         thread::spawn(move || {
             let points:Vec<Waypoint> = track.segments.iter().flat_map(|s| s.points.iter().cloned()).collect();
             let mut gpx = fit_bounds(gpx, &points);
+            track.name = append_index_to_name(track.name, index);
             gpx.tracks.clear();
             gpx.tracks.push(track);
             gpx.tracks.shrink_to_fit();
@@ -215,10 +217,7 @@ impl TrackSplitter {
         track_segment.points = points.to_vec();
 
         let mut cloned_track = src_track.clone();
-        cloned_track.segments.clear();
-        cloned_track.segments.push(track_segment);
-        cloned_track.segments.shrink_to_fit();
-
+        cloned_track.segments = vec![track_segment];
         cloned_track
     }
 }
