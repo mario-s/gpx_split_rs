@@ -23,12 +23,12 @@ pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
 ///
 pub fn write_gpx(mut gpx: Gpx, path: &str, counter: usize) -> Result<(), Error> {
     gpx = update_metadata_name(gpx, counter);
-    let p = create_path(path, counter)?;
-    let file = File::create(&p)?;
+    let path = create_path(path, counter)?;
+    let file = File::create(&path)?;
     let res = write(&gpx, file);
     match res {
         Ok(_) => {
-            debug!("wrote file {}", p);
+            debug!("wrote file {}", path);
             Ok(())
         }
         Err(gpx_err) => Err(to_error(gpx_err)),

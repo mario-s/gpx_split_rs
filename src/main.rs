@@ -56,10 +56,10 @@ fn main() {
     let max = args.max;
     let out = args.output;
 
-    let limit = create_limit(max, by);
+    let limit = || {create_limit(max, by)};
     let res = match trace {
-        Trace::Route => run(path.clone(), out, Box::new(RouteSplitter::new(limit))),
-        Trace::Track => run(path.clone(), out, Box::new(TrackSplitter::new(limit))),
+        Trace::Route => run(path.clone(), out, Box::new(RouteSplitter::new(limit()))),
+        Trace::Track => run(path.clone(), out, Box::new(TrackSplitter::new(limit()))),
     };
     res.unwrap();
 
