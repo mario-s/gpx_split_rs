@@ -1,7 +1,9 @@
+use log::trace;
 use geo_types::{coord, Rect};
+use geo_types::Point as GeoPoint;
 use gpx::{Gpx, Waypoint};
 use haversine_rs::distance_vec;
-use haversine_rs::point::Point;
+use haversine_rs::point::Point as HavPoint;
 use haversine_rs::units::Unit;
 
 /// Calculates the distance of all waypoints in the track.
@@ -14,7 +16,7 @@ pub fn distance_points(way_points: &[Waypoint]) -> f64 {
 /// Calculates the distance between multiple points.
 /// Returns result in Meter.
 ///
-fn distance(points: Vec<Point>) -> f64 {
+fn distance(points: Vec<HavPoint>) -> f64 {
     distance_vec(points, Unit::Meters)
 }
 
@@ -64,12 +66,29 @@ fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
 
 /// Collect the points (x, y) from the given way points
 ///
-fn collect_points(way_points: &[Waypoint]) -> Vec<Point> {
+fn collect_points(way_points: &[Waypoint]) -> Vec<HavPoint> {
     way_points
         .iter()
         .map(|p| p.point())
-        .map(|p| Point::new(p.x(), p.y()))
+        .map(|p| HavPoint::new(p.x(), p.y()))
         .collect()
+}
+
+fn _is_point_on_line(point: Waypoint, start: Waypoint, end: Waypoint) -> bool {
+    let point = point.point();
+    let start = start.point();
+    let end = end.point();
+
+    // Calculate vectors
+    let vec_1 = GeoPoint::new(point.x() - start.x(), point.y() - start.y());
+    let vec_2 = GeoPoint::new(end.x() - start.x(), end.y() - start.y());
+
+    // Check if the vectors are collinear (their cross product is close to zero)
+    let cross_product = vec_2.x() * vec_1.y() - vec_2.y() * vec_1.x();
+    trace!("cross product of vectors: {}", cross_product);
+
+    // Check if the cross product is close to zero
+    cross_product.abs() < 1e-10
 }
 
 #[cfg(test)]
@@ -79,7 +98,7 @@ mod tests {
     use gpx::{Gpx, Metadata, Waypoint};
     use haversine_rs::point::Point as HavPoint;
 
-    use crate::geo::{distance, find_bounds, fit_bounds};
+    use crate::geo::{distance, find_bounds, fit_bounds, _is_point_on_line};
 
     #[test]
     fn test_distance() {
@@ -112,5 +131,21 @@ mod tests {
         assert_eq!(-73.9761399, rect.min().y);
         assert_eq!(40.7767644, rect.max().x);
         assert_eq!(-73.9673991, rect.max().y);
+    }
+
+    #[test]
+    fn test_is_point_on_line_true() {
+        let point_0 = Waypoint::new(GeoPoint::new(40.8, -73.8));
+        let point_1 = Waypoint::new(GeoPoint::new(40.9, -73.9));
+        let point_2 = Waypoint::new(GeoPoint::new(40.7, -73.7));
+        assert!(_is_point_on_line(point_0, point_1, point_2));
+    }
+
+    #[test]
+    fn test_is_point_on_line_false() {
+        let point_0 = Waypoint::new(GeoPoint::new(41.8, -73.8));
+        let point_1 = Waypoint::new(GeoPoint::new(40.9, -73.9));
+        let point_2 = Waypoint::new(GeoPoint::new(40.7, -73.7));
+        assert!(!_is_point_on_line(point_0, point_1, point_2));
     }
 }
