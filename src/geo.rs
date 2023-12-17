@@ -136,15 +136,15 @@ mod tests {
 
     #[test]
     fn test_is_point_on_line_true() {
-        assert!(_is_point_on_line(waypoint(2.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))));
-        assert!(_is_point_on_line(waypoint(3.0, 3.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))));
-        assert!(_is_point_on_line(waypoint(40.8, -73.8), (waypoint(40.9, -73.9), waypoint(40.7, -73.7))));
+        assert!(_is_point_on_line(waypoint(2.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))), "expected 2,2 on (2,2 - 4,4)");
+        assert!(_is_point_on_line(waypoint(3.0, 3.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))), "expected 3,3 on (2,2 - 4,4)");
+        assert!(_is_point_on_line(waypoint(40.8, -73.8), (waypoint(40.9, -73.9), waypoint(40.7, -73.7))), "expected 40.8,-73.8 on (40.9,-73.9 - 40.7,-73.7)");
     }
 
     #[test]
     fn test_is_point_on_line_false() {
-        assert!(!_is_point_on_line(waypoint(1.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))));
-        assert!(!_is_point_on_line(waypoint(3.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))));
-        assert!(!_is_point_on_line(waypoint(41.8, -73.8), (waypoint(40.9, -73.9), waypoint(40.7, -73.7))));
+        assert!(!_is_point_on_line(waypoint(1.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))), "expected 1,2 not on (2,2 - 4,4)");
+        assert!(!_is_point_on_line(waypoint(3.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))), "expected 3,2 not on (2,2 - 4,4)");
+        assert!(!_is_point_on_line(waypoint(41.8, -73.8), (waypoint(40.9, -73.9), waypoint(40.7, -73.7))), "expected 41.8,-73.8 not on (40.9,-73.9 - 40.7,-73.7)");
     }
 }
