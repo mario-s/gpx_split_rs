@@ -76,13 +76,13 @@ pub trait Splitter<T> {
 /// Splitter for routes.
 ///
 pub struct RouteSplitter {
-    limit: Box<dyn Limit>,
+    limit: Limit,
 }
 
 /// Splitter for tracks.
 ///
 pub struct TrackSplitter {
-    limit: Box<dyn Limit>,
+    limit: Limit,
 }
 
 //--------------------------------------------------------------
@@ -148,7 +148,7 @@ impl Splitter<Route> for RouteSplitter {
 }
 
 impl RouteSplitter {
-    pub fn new(limit: Box<dyn Limit>) -> Self {
+    pub fn new(limit: Limit) -> Self {
         RouteSplitter { limit }
     }
 
@@ -233,7 +233,7 @@ impl Splitter<Track> for TrackSplitter {
 }
 
 impl TrackSplitter {
-    pub fn new(limit: Box<dyn Limit>) -> Self {
+    pub fn new(limit: Limit) -> Self {
         TrackSplitter { limit }
     }
 
@@ -253,7 +253,7 @@ impl TrackSplitter {
 
 #[cfg(test)]
 mod tests {
-    use crate::limit::PointsLimit;
+    use crate::limit::Limit;
     use crate::split::{RouteSplitter, Splitter, TrackSplitter};
     use gpx::{Route, Track, TrackSegment, Waypoint};
 
@@ -299,7 +299,7 @@ mod tests {
     }
 
     fn new_route_splitter(max: u32) -> Box<dyn Splitter<Route>> {
-        let lim = Box::new(PointsLimit::new(max));
+        let lim = Limit::points(max);
         Box::new(RouteSplitter::new(lim))
     }
 
@@ -363,7 +363,7 @@ mod tests {
     }
 
     fn new_track_splitter(max: u32) -> Box<dyn Splitter<Track>> {
-        let lim = Box::new(PointsLimit::new(max));
+        let lim = Limit::points(max);
         Box::new(TrackSplitter::new(lim))
     }
 

@@ -3,7 +3,7 @@ use log::debug;
 use std::io::Error;
 use std::time::Instant;
 
-use gpx_split::limit::{LengthLimit, Limit, PointsLimit};
+use gpx_split::limit::Limit;
 use gpx_split::split::{Context, RouteSplitter, Splitter, TrackSplitter};
 
 /// A program to split a GPX file into smaller chunks
@@ -66,10 +66,10 @@ fn main() {
     debug!("Splitting took {} microseconds.", now.elapsed().as_micros());
 }
 
-fn create_limit(max: u32, by: By) -> Box<dyn Limit> {
+fn create_limit(max: u32, by: By) -> Limit {
     match by {
-        By::Len => Box::new(LengthLimit::new(max)),
-        By::Point => Box::new(PointsLimit::new(max)),
+        By::Len => Limit::length(max),
+        By::Point => Limit::points(max),
     }
 }
 
