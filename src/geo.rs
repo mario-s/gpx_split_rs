@@ -1,6 +1,4 @@
-use log::trace;
 use geo_types::{coord, Rect};
-use geo_types::Point as Geopoint;
 use gpx::{Gpx, Waypoint};
 use haversine_rs::distance_vec;
 use haversine_rs::point::Point as Havpoint;
@@ -74,20 +72,18 @@ fn collect_points(way_points: &[Waypoint]) -> Vec<Havpoint> {
         .collect()
 }
 
-fn _is_point_on_line(point: Waypoint, line: (Waypoint, Waypoint)) -> bool {
-    // get points for easy calculation
-    let point = point.point();
-    let start = line.0.point();
-    let end = line.1.point();
+/// Calculate the distance from a point to the line and returns it in meter
+fn _distance_to_line(point: Waypoint, line: (Waypoint, Waypoint)) -> f64 {
+    let points = collect_points(&vec![line.0, line.1, point]);
 
-    // calculate vectors
-    let vec_1 = Geopoint::new(point.x() - start.x(), point.y() - start.y());
-    let vec_2 = Geopoint::new(end.x() - start.x(), end.y() - start.y());
+    let line_len = distance(points[0..2].to_vec());
+    let d_p1_p3 = distance(vec![points[1], points[2]]);
+    let d_p2_p3 = distance(points[1..3].to_vec());
 
-    // check if the vectors are collinear (their cross product is close to zero)
-    let cross_product = vec_2.x() * vec_1.y() - vec_2.y() * vec_1.x();
-    trace!("cross product of vectors: {}", cross_product);
-    cross_product.abs() < 1e-10
+    let s = (line_len + d_p1_p3 + d_p2_p3) / 2.0;
+    let area = (s * (s - line_len) * (s - d_p1_p3) * (s - d_p2_p3)).sqrt();
+
+    (2.0 * area / line_len).abs()
 }
 
 #[cfg(test)]
@@ -95,9 +91,9 @@ mod tests {
     use geo_types::Point as Geopoint;
     use geo_types::{coord, Rect};
     use gpx::{Gpx, Metadata, Waypoint};
-    use haversine_rs::point::Point as Havpoint;
+    use approx_eq::assert_approx_eq;
 
-    use crate::geo::{distance, find_bounds, fit_bounds, _is_point_on_line};
+    use crate::geo::{find_bounds, fit_bounds, _distance_to_line, distance_points};
 
     fn waypoint(x: f64, y: f64) -> Waypoint {
         Waypoint::new(Geopoint::new(x, y))
@@ -105,9 +101,9 @@ mod tests {
 
     #[test]
     fn test_distance() {
-        let point_0 = Havpoint::new(40.7767644, -73.9761399);
-        let point_1 = Havpoint::new(40.771209, -73.9673991);
-        let distance = distance(vec![point_0, point_1]);
+        let point_0 = waypoint(40.7767644, -73.9761399);
+        let point_1 = waypoint(40.771209, -73.9673991);
+        let distance = distance_points(&[point_0, point_1]);
         assert!(distance == 960.9072987659282);
     }
 
@@ -135,16 +131,9 @@ mod tests {
     }
 
     #[test]
-    fn test_is_point_on_line_true() {
-        assert!(_is_point_on_line(waypoint(2.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))), "expected 2,2 on (2,2 - 4,4)");
-        assert!(_is_point_on_line(waypoint(3.0, 3.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))), "expected 3,3 on (2,2 - 4,4)");
-        assert!(_is_point_on_line(waypoint(40.8, -73.8), (waypoint(40.9, -73.9), waypoint(40.7, -73.7))), "expected 40.8,-73.8 on (40.9,-73.9 - 40.7,-73.7)");
-    }
-
-    #[test]
-    fn test_is_point_on_line_false() {
-        assert!(!_is_point_on_line(waypoint(1.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))), "expected 1,2 not on (2,2 - 4,4)");
-        assert!(!_is_point_on_line(waypoint(3.0, 2.0), (waypoint(2.0, 2.0), waypoint(4.0, 4.0))), "expected 3,2 not on (2,2 - 4,4)");
-        assert!(!_is_point_on_line(waypoint(41.8, -73.8), (waypoint(40.9, -73.9), waypoint(40.7, -73.7))), "expected 41.8,-73.8 not on (40.9,-73.9 - 40.7,-73.7)");
+    fn test_distance_to_line() {
+        let d = distance_points(&[waypoint(0.0, 0.00006), waypoint(0.0, 0.0)]);
+        let res = _distance_to_line(waypoint(0.0, 0.00006), (waypoint(-1.0, 0.0), waypoint(1.0, 0.0)));
+        assert_approx_eq!(d, res, 1e-4);
     }
 }
