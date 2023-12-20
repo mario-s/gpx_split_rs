@@ -1,8 +1,8 @@
 use geo_types::{coord, Rect};
 use gpx::{Gpx, Waypoint};
-use haversine_rs::distance_vec;
-use haversine_rs::point::Point as Havpoint;
-use haversine_rs::units::Unit;
+use geo::prelude::*;
+use geo::Point;
+use geo::point;
 
 /// Calculates the distance of all waypoints in the track.
 /// Returns result in Meter.
@@ -14,8 +14,11 @@ pub fn distance_points(way_points: &[Waypoint]) -> f64 {
 /// Calculates the distance between multiple points.
 /// Returns result in Meter.
 ///
-fn distance(points: Vec<Havpoint>) -> f64 {
-    distance_vec(points, Unit::Meters)
+fn distance(points: Vec<Point<f64>>) -> f64 {
+    points
+    .iter().zip(points.iter().skip(1))
+    .map(|(&p1, &p2)| p1.geodesic_distance(&p2))
+    .sum()
 }
 
 /// This will adjust the bounds of the metadata, if they are set.
@@ -42,19 +45,19 @@ fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
     let points = collect_points(way_points);
     let min_x = points
         .iter()
-        .map(|p| p.latitude)
+        .map(|p| p.y())
         .fold(f64::INFINITY, f64::min);
     let max_x = points
         .iter()
-        .map(|p| p.latitude)
+        .map(|p| p.y())
         .fold(f64::NEG_INFINITY, f64::max);
     let min_y = points
         .iter()
-        .map(|p| p.longitude)
+        .map(|p| p.x())
         .fold(f64::INFINITY, f64::min);
     let max_y = points
         .iter()
-        .map(|p| p.longitude)
+        .map(|p| p.x())
         .fold(f64::NEG_INFINITY, f64::max);
     Some(Rect::new(
         coord! { x: min_x, y: min_y },
@@ -64,11 +67,11 @@ fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
 
 /// Collect the points (x, y) from the given way points
 ///
-fn collect_points(way_points: &[Waypoint]) -> Vec<Havpoint> {
+fn collect_points(way_points: &[Waypoint]) -> Vec<Point<f64>> {
     way_points
         .iter()
         .map(|p| p.point())
-        .map(|p| Havpoint::new(p.x(), p.y()))
+        .map(|p| point!(x: p.x(), y: p.y()))
         .collect()
 }
 
@@ -103,10 +106,10 @@ mod tests {
 
     #[test]
     fn test_distance() {
-        let point_0 = waypoint(40.7767644, -73.9761399);
-        let point_1 = waypoint(40.771209, -73.9673991);
+        let point_0 = waypoint(-73.9761399, 40.7767644);
+        let point_1 = waypoint(-73.9673991, 40.771209,);
         let distance = distance_points(&[point_0, point_1]);
-        assert!(distance == 960.9072987659282);
+        assert_approx_eq!(distance, 961.8288);
     }
 
     #[test]
@@ -124,7 +127,7 @@ mod tests {
 
     #[test]
     fn test_find_bounding_box() {
-        let points = vec![waypoint(40.7767644, -73.9761399), waypoint(40.771209, -73.9673991)];
+        let points = vec![waypoint(-73.9761399, 40.7767644), waypoint(-73.9673991, 40.771209)];
         let rect = find_bounds(&points).unwrap();
         assert_eq!(40.771209, rect.min().x);
         assert_eq!(-73.9761399, rect.min().y);

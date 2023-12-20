@@ -4,7 +4,7 @@ use gpx_split::limit::Limit;
 #[test]
 fn test_track_length() {
     let path = "target/debug/track_l.gpx".to_string();
-    let splitter = Box::new(TrackSplitter::new(Limit::length(1000)));
+    let splitter = Box::new(TrackSplitter::new(Limit::length(800)));
 
     let ctx = Context::new(path, None, splitter);
     let res = ctx.run().unwrap();
