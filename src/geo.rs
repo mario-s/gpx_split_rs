@@ -72,18 +72,20 @@ fn collect_points(way_points: &[Waypoint]) -> Vec<Havpoint> {
         .collect()
 }
 
-/// Calculate the distance from a point to the line and returns it in meter
-fn _distance_to_line(point: Waypoint, line: (Waypoint, Waypoint)) -> f64 {
-    let points = collect_points(&vec![line.0, line.1, point]);
+/// Calculate the distance from a point to the geodesic in meter.
+/// A straight line between two points, on the earth surface is a geodesic.
+/// The closest point on a geodesic to another point, is referred to as the interception point.
+fn _distance_to_line(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> f64 {
+    let points = collect_points(&vec![geodesic.0, geodesic.1, point]);
 
-    let line_len = distance(points[0..2].to_vec());
+    let geodesic_len = distance(points[0..2].to_vec());
     let d_p1_p3 = distance(vec![points[1], points[2]]);
     let d_p2_p3 = distance(points[1..3].to_vec());
 
-    let s = (line_len + d_p1_p3 + d_p2_p3) / 2.0;
-    let area = (s * (s - line_len) * (s - d_p1_p3) * (s - d_p2_p3)).sqrt();
+    let s = (geodesic_len + d_p1_p3 + d_p2_p3) / 2.0;
+    let area = (s * (s - geodesic_len) * (s - d_p1_p3) * (s - d_p2_p3)).sqrt();
 
-    (2.0 * area / line_len).abs()
+    (2.0 * area / geodesic_len).abs()
 }
 
 #[cfg(test)]
