@@ -134,8 +134,9 @@ mod tests {
 
     #[test]
     fn test_distance_to_line() {
-        let d = distance_points(&[waypoint(0.0, 0.00006), waypoint(0.0, 0.0)]);
-        let res = _distance_to_line(waypoint(0.0, 0.00006), (waypoint(-1.0, 0.0), waypoint(1.0, 0.0)));
-        assert_approx_eq!(d, res, 1e-4);
+        //0.00028° = 0°0'1" ~ 30.9 m
+        let d = distance_points(&[waypoint(0.0, 0.00028), waypoint(0.0, 0.0)]);
+        let res = _distance_to_line(waypoint(0.0, 0.00028), (waypoint(-0.005, 0.0), waypoint(0.005, 0.0)));
+        assert_approx_eq!(d, res, 1e-8);
     }
 }
