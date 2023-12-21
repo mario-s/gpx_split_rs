@@ -41,8 +41,10 @@ enum Trace {
 enum By {
     /// split by number of points
     Point,
-    /// split by length of track
+    /// split by length
     Len,
+    /// split by location
+    Loc,
 }
 
 fn main() {
@@ -70,6 +72,7 @@ fn create_limit(max: u32, by: By) -> Limit {
     match by {
         By::Len => Limit::length(max),
         By::Point => Limit::points(max),
+        By::Loc => panic!("not implemented yet"),
     }
 }
 

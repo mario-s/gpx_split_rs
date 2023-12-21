@@ -10,6 +10,8 @@ pub enum Limit {
     Points(u32),
     /// strategy to check limit based on the length of the sum of the distances between the points
     Length(u32),
+    /// strategy to check limit based on the distance to the nearest location
+    Location(Box<Vec<Waypoint>>, f64),
 }
 
 impl Limit {
@@ -23,10 +25,35 @@ impl Limit {
         Limit::Length(max_length)
     }
 
+    pub fn location(waypoint_file: String, distance: f64) -> Self {
+        debug!("reading waypoints for splitting at location from: {}", waypoint_file);
+        debug!("minimum distance for location to split: {}", distance);
+        let waypoints: Vec<Waypoint> = vec![];
+        Limit::Location(Box::new(waypoints), distance)
+    }
+
     pub fn exceeds(&self, points: &[Waypoint]) -> bool {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
             Limit::Length(max_length) => distance_points(points) > *max_length as f64,
+            Limit::Location(_, _) => panic!("not implemented yet"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::limit::Limit;
+
+    #[test]
+    fn test_location() {
+        let lim = Limit::location("waypoint_file".to_string(), 10.0);
+        match lim {
+            Limit::Location(waypoints, dist) => {
+                assert_eq!(0, waypoints.len());
+                assert_eq!(10.0, dist)
+            },
+            _ => panic!("unexpected result")
         }
     }
 }
