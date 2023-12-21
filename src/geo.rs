@@ -87,13 +87,13 @@ fn _distance_to_line(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> f64 {
     let p3 = point!(x: p3.x(), y: p3.y());
 
     // Calculate bearing from p1 to p2
-    let bearing_p1_to_p2 = p1.geodesic_bearing(p2);
+    let bearing = p1.geodesic_bearing(p2);
 
     // Calculate geodesic distance from p1 to p3
-    let distance_p1_to_p3 = p1.geodesic_distance(&p3);
+    let distance = p1.geodesic_distance(&p3);
 
-    // Calculate the destination point x from p1 in the direction of p2 with the distance equal to p1 to p3
-    let x = p1.geodesic_destination(bearing_p1_to_p2, distance_p1_to_p3);
+    // Calculate the interception point x from p1 in the direction of p2 with the distance
+    let x = p1.geodesic_destination(bearing, distance);
     x.geodesic_distance(&p3)
 }
 
@@ -146,6 +146,7 @@ mod tests {
         //0.00028° = 0°0'1" ~ 30.9 m
         let d = distance_points(&[waypoint(13.535369, 52.643826), waypoint(13.53530816, 52.64394698)]);
         let res = _distance_to_line(waypoint(13.535369, 52.643826), (waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)));
-        assert_approx_eq!(d, res, 1e-3);
+        assert_approx_eq!(d, res, 1e-4);
+        assert_approx_eq!(14.077962265699961, res);
     }
 }
