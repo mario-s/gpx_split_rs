@@ -58,22 +58,19 @@ fn main() {
     let max = args.max;
     let out = args.output;
 
-    let limit = || {create_limit(max, by)};
+    let limit = match by {
+        By::Len => Limit::length(max),
+        By::Point => Limit::points(max),
+        By::Loc => Limit::location("".to_string(), max),
+    };
+
     let res = match trace {
-        Trace::Route => run(path.clone(), out, Box::new(RouteSplitter::new(limit()))),
-        Trace::Track => run(path.clone(), out, Box::new(TrackSplitter::new(limit()))),
+        Trace::Route => run(path.clone(), out, Box::new(RouteSplitter::new(limit))),
+        Trace::Track => run(path.clone(), out, Box::new(TrackSplitter::new(limit))),
     };
     res.unwrap();
 
     debug!("Splitting took {} microseconds.", now.elapsed().as_micros());
-}
-
-fn create_limit(max: u32, by: By) -> Limit {
-    match by {
-        By::Len => Limit::length(max),
-        By::Point => Limit::points(max),
-        By::Loc => panic!("not implemented yet"),
-    }
 }
 
 fn run<T: 'static>(
