@@ -79,16 +79,22 @@ fn collect_points(way_points: &[Waypoint]) -> Vec<Point<f64>> {
 /// A straight line between two points, on the earth surface is a geodesic.
 /// The closest point on a geodesic to another point, is referred to as the interception point.
 fn _distance_to_line(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> f64 {
-    let points = collect_points(&vec![geodesic.0, geodesic.1, point]);
+    let p1 = geodesic.0.point();
+    let p1 = point!(x: p1.x(), y: p1.y());
+    let p2 = geodesic.1.point();
+    let p2 = point!(x: p2.x(), y: p2.y());
+    let p3 = point.point();
+    let p3 = point!(x: p3.x(), y: p3.y());
 
-    let geodesic_len = distance(points[0..2].to_vec());
-    let d_p1_p3 = distance(vec![points[1], points[2]]);
-    let d_p2_p3 = distance(points[1..3].to_vec());
+    // Calculate bearing from p1 to p2
+    let bearing_p1_to_p2 = p1.geodesic_bearing(p2);
 
-    let s = (geodesic_len + d_p1_p3 + d_p2_p3) / 2.0;
-    let area = (s * (s - geodesic_len) * (s - d_p1_p3) * (s - d_p2_p3)).sqrt();
+    // Calculate geodesic distance from p1 to p3
+    let distance_p1_to_p3 = p1.geodesic_distance(&p3);
 
-    (2.0 * area / geodesic_len).abs()
+    // Calculate the destination point x from p1 in the direction of p2 with the distance equal to p1 to p3
+    let x = p1.geodesic_destination(bearing_p1_to_p2, distance_p1_to_p3);
+    x.geodesic_distance(&p3)
 }
 
 #[cfg(test)]
@@ -138,8 +144,8 @@ mod tests {
     #[test]
     fn test_distance_to_line() {
         //0.00028° = 0°0'1" ~ 30.9 m
-        let d = distance_points(&[waypoint(0.0, 0.00028), waypoint(0.0, 0.0)]);
-        let res = _distance_to_line(waypoint(0.0, 0.00028), (waypoint(-0.005, 0.0), waypoint(0.005, 0.0)));
-        assert_approx_eq!(d, res, 1e-8);
+        let d = distance_points(&[waypoint(13.535369, 52.643826), waypoint(13.53530816, 52.64394698)]);
+        let res = _distance_to_line(waypoint(13.535369, 52.643826), (waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)));
+        assert_approx_eq!(d, res, 1e-3);
     }
 }
