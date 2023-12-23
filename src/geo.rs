@@ -1,4 +1,5 @@
 use geo_types::{coord, Rect};
+use geo_types::Point as Geopoint;
 use gpx::{Gpx, Waypoint};
 use geo::prelude::*;
 use geo::Point;
@@ -75,10 +76,9 @@ fn collect_points(way_points: &[Waypoint]) -> Vec<Point<f64>> {
         .collect()
 }
 
-/// Calculate the distance from a point to the geodesic in meter.
 /// A straight line between two points, on the earth surface is a geodesic.
 /// The closest point on a geodesic to another point, is referred to as the interception point.
-fn _distance_to_line(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> f64 {
+fn _interception_point(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> Waypoint {
     let p1 = geodesic.0.point();
     let p1 = point!(x: p1.x(), y: p1.y());
     let p2 = geodesic.1.point();
@@ -92,23 +92,23 @@ fn _distance_to_line(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> f64 {
     // Calculate geodesic distance from p1 to p3
     let distance = p1.geodesic_distance(&p3);
 
-    // Calculate the interception point x from p1 in the direction of p2 with the distance
-    let x = p1.geodesic_destination(bearing, distance);
-    x.geodesic_distance(&p3)
+    // Calculate the interception point from p1 in the direction of p2 with the distance
+    let interception = p1.geodesic_destination(bearing, distance);
+    waypoint(interception.x(), interception.y())
+}
+
+fn waypoint(x: f64, y: f64) -> Waypoint {
+    Waypoint::new(Geopoint::new(x, y))
 }
 
 #[cfg(test)]
 mod tests {
-    use geo_types::Point as Geopoint;
+
     use geo_types::{coord, Rect};
-    use gpx::{Gpx, Metadata, Waypoint};
+    use gpx::{Gpx, Metadata};
     use approx_eq::assert_approx_eq;
 
-    use crate::geo::{find_bounds, fit_bounds, _distance_to_line, distance_points};
-
-    fn waypoint(x: f64, y: f64) -> Waypoint {
-        Waypoint::new(Geopoint::new(x, y))
-    }
+    use crate::geo::{find_bounds, fit_bounds, waypoint, distance_points, _interception_point};
 
     #[test]
     fn test_distance() {
@@ -144,9 +144,9 @@ mod tests {
     #[test]
     fn test_distance_to_line() {
         //0.00028° = 0°0'1" ~ 30.9 m
-        let d = distance_points(&[waypoint(13.535369, 52.643826), waypoint(13.53530816, 52.64394698)]);
-        let res = _distance_to_line(waypoint(13.535369, 52.643826), (waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)));
-        assert_approx_eq!(d, res, 1e-4);
-        assert_approx_eq!(14.077962265699961, res);
+        let p = waypoint(13.535369, 52.643826);
+        let ip = _interception_point(p.clone(), (waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)));
+        let dist_p_ip = distance_points(&[p, ip]);
+        assert_approx_eq!(14.077962265699961, dist_p_ip);
     }
 }
