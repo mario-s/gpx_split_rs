@@ -36,7 +36,13 @@ impl Limit {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
             Limit::Length(max_length) => distance_points(points) > *max_length as f64,
-            Limit::Location(_, _) => panic!("not implemented yet"),
+            Limit::Location(split_points, _) => {
+                if split_points.is_empty() || points.len() < 2 {
+                    return false;
+                }
+
+                panic!("not implemented yet")
+            },
         }
     }
 }
