@@ -49,6 +49,8 @@ impl Limit {
 
 #[cfg(test)]
 mod tests {
+    use gpx::Waypoint;
+
     use crate::limit::Limit;
 
     #[test]
@@ -61,5 +63,13 @@ mod tests {
             },
             _ => panic!("unexpected result")
         }
+    }
+
+    #[test]
+    fn test_exceeds_location_false() {
+        let lim = Limit::Location(Box::new(vec![]), 2);
+        assert!(!lim.exceeds(&[Waypoint::default()]));
+        let lim = Limit::Location(Box::new(vec![Waypoint::default()]), 2);
+        assert!(!lim.exceeds(&[Waypoint::default()]));
     }
 }
