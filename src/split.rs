@@ -105,9 +105,8 @@ impl Splitter<Route> for RouteSplitter {
                     let new_route = self.clone_route(route, &points);
                     new_routes.push(new_route);
 
-                    //clear vec starting with current
-                    points.clear();
-                    points.push(point.clone());
+                    //clear points, starting with last one
+                    points = clear_points(&points);
                 }
             });
         });
@@ -184,9 +183,8 @@ impl Splitter<Track> for TrackSplitter {
                         let new_track = self.clone_track(track, &points);
                         new_tracks.push(new_track);
 
-                        //clear vec starting with current
-                        points.clear();
-                        points.push(point.clone());
+                        //clear points, starting with last one
+                        points = clear_points(&points);
                     }
                 });
         });
@@ -247,6 +245,16 @@ impl TrackSplitter {
         cloned_track.segments = vec![track_segment];
         cloned_track
     }
+}
+
+//--------------------------------------------------------------
+
+// clear the points and add the previous last one as the first
+fn clear_points(points: &Vec<Waypoint>) ->  Vec<Waypoint>{
+    if let Some(last) = points.last() {
+        return vec![last.clone()];
+    }
+    vec![]
 }
 
 //--------------------------------------------------------------

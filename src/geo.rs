@@ -78,7 +78,7 @@ fn collect_points(way_points: &[Waypoint]) -> Vec<Point<f64>> {
 
 /// A straight line between two points, on the earth surface is a geodesic.
 /// The closest point on a geodesic to another point, is referred to as the interception point.
-fn _interception_point(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> Waypoint {
+pub fn interception_point(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> Waypoint {
     let p1 = geodesic.0.point();
     let p1 = point!(x: p1.x(), y: p1.y());
     let p2 = geodesic.1.point();
@@ -108,7 +108,7 @@ mod tests {
     use gpx::{Gpx, Metadata};
     use approx_eq::assert_approx_eq;
 
-    use crate::geo::{find_bounds, fit_bounds, waypoint, distance_points, _interception_point};
+    use crate::geo::{find_bounds, fit_bounds, waypoint, distance_points, interception_point};
 
     #[test]
     fn test_distance() {
@@ -145,7 +145,7 @@ mod tests {
     fn test_distance_to_line() {
         //0.00028° = 0°0'1" ~ 30.9 m
         let p = waypoint(13.535369, 52.643826);
-        let ip = _interception_point(p.clone(), (waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)));
+        let ip = interception_point(p.clone(), (waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)));
         let dist_p_ip = distance_points(&[p, ip]);
         assert_approx_eq!(14.077962265699961, dist_p_ip);
     }

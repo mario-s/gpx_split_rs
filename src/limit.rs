@@ -1,7 +1,9 @@
+use std::collections::HashMap;
 use gpx::Waypoint;
 use log::debug;
 
 use crate::geo::distance_points;
+use crate::geo::interception_point;
 
 
 /// checks if the points exceed a defined limit.
@@ -36,14 +38,31 @@ impl Limit {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
             Limit::Length(max_length) => distance_points(points) > *max_length as f64,
-            Limit::Location(split_points, _) => {
-                if split_points.is_empty() || points.len() < 2 {
-                    return false;
-                }
-
-                panic!("not implemented yet")
-            },
+            Limit::Location(split_points, dist) => self.exceeds_loc(*dist, *&split_points, points),
         }
+    }
+
+    fn exceeds_loc(&self, distance: u32, split_points: &Box<Vec<Waypoint>>, points: &[Waypoint]) -> bool {
+        let len = points.len();
+        if split_points.is_empty() || len < 2 {
+            return false;
+        }
+        let distance = distance as f64;
+        //map of distances and interception points
+        let map = split_points.iter().filter_map(|p| {
+            let line = (points[len - 2].clone(), points[len - 1].clone());
+            let ip = interception_point(p.clone(), line);
+            let dist = distance_points(&[p.clone(), ip.clone()]);
+            if dist < distance {
+                let dist = (dist * 1000.0) as i64;
+                Some((dist, ip))
+            } else {
+                None
+            }
+        }).collect::<HashMap<_, _>>();
+        //TODO: replace last point with the interception point, that has the shortest distance
+
+        return !map.is_empty();
     }
 }
 
