@@ -94,21 +94,21 @@ pub fn interception_point(point: Waypoint, geodesic: (Waypoint, Waypoint)) -> Wa
 
     // Calculate the interception point from p1 in the direction of p2 with the distance
     let interception = p1.geodesic_destination(bearing, distance);
-    waypoint(interception.x(), interception.y())
-}
-
-fn waypoint(x: f64, y: f64) -> Waypoint {
-    Waypoint::new(Geopoint::new(x, y))
+    Waypoint::new(Geopoint::new(interception.x(), interception.y()))
 }
 
 #[cfg(test)]
 mod tests {
 
-    use geo_types::{coord, Rect};
-    use gpx::{Gpx, Metadata};
+    use geo_types::{coord, Rect, Point};
+    use gpx::{Gpx, Metadata, Waypoint};
     use approx_eq::assert_approx_eq;
 
-    use crate::geo::{find_bounds, fit_bounds, waypoint, distance_points, interception_point};
+    use crate::geo::{find_bounds, fit_bounds, distance_points, interception_point};
+
+    fn waypoint(x: f64, y: f64) -> Waypoint {
+        Waypoint::new(Point::new(x, y))
+    }
 
     #[test]
     fn test_distance() {
