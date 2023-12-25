@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use gpx::Waypoint;
 use log::debug;
 
-use crate::geo::distance_points;
+use crate::geo::distance;
+use crate::geo::distance_all;
 use crate::geo::interception_point;
 
 
@@ -37,25 +38,25 @@ impl Limit {
     pub fn exceeds(&self, points: &[Waypoint]) -> bool {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
-            Limit::Length(max_length) => distance_points(points) > *max_length as f64,
+            Limit::Length(max_length) => distance_all(points) > *max_length as f64,
             Limit::Location(split_points, dist) => self.exceeds_loc(*dist, *&split_points, points),
         }
     }
 
-    fn exceeds_loc(&self, distance: u32, split_points: &Box<Vec<Waypoint>>, points: &[Waypoint]) -> bool {
+    fn exceeds_loc(&self, dist: u32, split_points: &Box<Vec<Waypoint>>, points: &[Waypoint]) -> bool {
         let len = points.len();
         if split_points.is_empty() || len < 2 {
             return false;
         }
-        let distance = distance as f64;
+        let dist = dist as f64;
         //map of distances and interception points
         let map = split_points.iter().filter_map(|p| {
-            let line = (points[len - 2].clone(), points[len - 1].clone());
-            let ip = interception_point(p.clone(), line);
-            let dist = distance_points(&[p.clone(), ip.clone()]);
-            if dist < distance {
-                let dist = (dist * 1000.0) as i64;
-                Some((dist, ip))
+            let line = (&points[len - 2], &points[len - 1]);
+            let ip = interception_point(&p, line);
+            let d = distance(&p, &ip);
+            if d < dist {
+                let d = (d * 1000.0) as i64;
+                Some((d, ip))
             } else {
                 None
             }
