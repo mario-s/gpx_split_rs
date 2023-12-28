@@ -27,7 +27,7 @@ pub fn distance_all(points: &[Waypoint]) -> f64 {
 }
 
 /// This will adjust the bounds of the metadata, if they are set.
-/// The new bounding box will a Rect which contains min/max of x/y.
+/// The new bounding box is a rectangle which contains min/max of x/y.
 ///
 pub fn fit_bounds(mut gpx: Gpx, way_points: &Vec<Waypoint>) -> Gpx {
     if let Some(existing) = gpx.metadata {
@@ -108,14 +108,14 @@ mod tests {
     use gpx::{Gpx, Metadata, Waypoint};
     use approx_eq::assert_approx_eq;
 
-    use crate::geo::{find_bounds, fit_bounds, distance_all, distance, interception_point};
+    use super::*;
 
     fn waypoint(x: f64, y: f64) -> Waypoint {
         Waypoint::new(Point::new(x, y))
     }
 
     #[test]
-    fn test_distance() {
+    fn distance_2() {
         let point_0 = waypoint(-73.9761399, 40.7767644);
         let point_1 = waypoint(-73.9673991, 40.771209,);
         let d = distance(&point_0, &point_1);
@@ -123,7 +123,7 @@ mod tests {
     }
 
     #[test]
-    fn test_distance_all() {
+    fn distance_array() {
         let point_0 = waypoint(-73.9761399, 40.7767644);
         let point_1 = waypoint(-73.9673991, 40.771209,);
         let distance = distance_all(&[point_0, point_1]);
@@ -131,7 +131,7 @@ mod tests {
     }
 
     #[test]
-    fn test_fit_bounds() {
+    fn no_waypoints_no_bounds() {
         let mut meta = Metadata::default();
         let rect = Rect::new(coord! { x: 10., y: 20. }, coord! { x: 30., y: 10. });
         meta.bounds = Some(rect);
@@ -144,7 +144,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_bounding_box() {
+    fn find_bounding_box() {
         let points = vec![waypoint(-73.9761399, 40.7767644), waypoint(-73.9673991, 40.771209)];
         let rect = find_bounds(&points).unwrap();
         assert_eq!(40.771209, rect.min().x);
@@ -154,7 +154,7 @@ mod tests {
     }
 
     #[test]
-    fn test_distance_to_line() {
+    fn distance_to_line() {
         //0.00028° = 0°0'1" ~ 30.9 m
         let p = waypoint(13.535369, 52.643826);
         let ip = interception_point(&p, (&waypoint(13.533826, 52.643605), &waypoint(13.535629, 52.644021)));

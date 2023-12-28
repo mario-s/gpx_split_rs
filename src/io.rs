@@ -71,9 +71,9 @@ fn to_error(gpx_err: GpxError) -> Error {
 mod tests {
     use gpx::{Gpx, Metadata};
 
-    use crate::io::*;
+    use super::*;
     #[test]
-    fn test_update_metadata_name() {
+    fn change_metadata_name() {
         let meta = Metadata {
             name: Some("bar".to_string()),
             ..Default::default()
@@ -89,7 +89,7 @@ mod tests {
     }
 
     #[test]
-    fn test_create_path() {
+    fn create_path_with_counter() {
         let res = create_path("foo/bar.gpx", 1).unwrap();
         assert_eq!("foo/bar_1.gpx", res);
     }

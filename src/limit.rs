@@ -75,7 +75,7 @@ mod tests {
     use crate::limit::Limit;
 
     #[test]
-    fn test_location() {
+    fn location() {
         let lim = Limit::location("waypoint_file".to_string(), 10);
         match lim {
             Limit::Location(waypoints, dist) => {
@@ -87,7 +87,7 @@ mod tests {
     }
 
     #[test]
-    fn test_exceeds_location_false() {
+    fn exceeds_location_false() {
         let lim = Limit::Location(Box::new(vec![]), 2);
         assert!(!lim.exceeds(&[Waypoint::default()]));
         let lim = Limit::Location(Box::new(vec![Waypoint::default()]), 2);
@@ -95,7 +95,7 @@ mod tests {
     }
 
     #[test]
-    fn test_exceeds_location_true() {
+    fn exceeds_location_true() {
         let lim = Limit::Location(Box::new(vec![Waypoint::new(Point::new(13.535369, 52.643826))]), 15);
         let points = &[Waypoint::new(Point::new(13.533826, 52.643605)), Waypoint::new(Point::new(13.535629, 52.644021))];
         assert!(lim.exceeds(points));

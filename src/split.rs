@@ -262,11 +262,11 @@ fn clear_points(points: &Vec<Waypoint>) ->  Vec<Waypoint>{
 #[cfg(test)]
 mod tests {
     use crate::limit::Limit;
-    use crate::split::{RouteSplitter, Splitter, TrackSplitter};
+    use super::*;
     use gpx::{Route, Track, TrackSegment, Waypoint};
 
     #[test]
-    fn test_split_route_0() {
+    fn split_route_0() {
         let route = Route::new();
 
         let routes = new_route_splitter(0).split(&[route]);
@@ -275,7 +275,7 @@ mod tests {
     }
 
     #[test]
-    fn test_split_route_1() {
+    fn split_route_1() {
         let route = new_route(4);
 
         let routes = new_route_splitter(4).split(&[route]);
@@ -284,7 +284,7 @@ mod tests {
     }
 
     #[test]
-    fn test_split_route_3() {
+    fn split_route_3() {
         let route = new_route(4);
 
         let routes = new_route_splitter(2).split(&[route]);
@@ -314,7 +314,7 @@ mod tests {
     //--------------------------------------------------------------
 
     #[test]
-    fn test_split_track_0() {
+    fn split_track_0() {
         let track = Track::new();
 
         let tracks = new_track_splitter(0).split(&[track]);
@@ -323,7 +323,7 @@ mod tests {
     }
 
     #[test]
-    fn test_split_track_1() {
+    fn split_track_1() {
         let track = new_track(4);
 
         let tracks = new_track_splitter(4).split(&[track]);
@@ -332,7 +332,7 @@ mod tests {
     }
 
     #[test]
-    fn test_split_track_3() {
+    fn split_track_3() {
         let track = new_track(4);
 
         let tracks = new_track_splitter(2).split(&[track]);
