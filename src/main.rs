@@ -69,7 +69,7 @@ fn main() {
         Trace::Route => run(path.clone(), out, Box::new(RouteSplitter::new(limit))),
         Trace::Track => run(path.clone(), out, Box::new(TrackSplitter::new(limit))),
     }.unwrap_or_else(|err| {
-        println!("Problem processing GPX file: {}", err);
+        eprintln!("Problem processing GPX file: {}", err);
         process::exit(1);
     });
 
