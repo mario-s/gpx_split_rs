@@ -1,6 +1,7 @@
 use clap::{Parser, ValueEnum};
 use log::debug;
 use std::io::Error;
+use std::process;
 use std::time::Instant;
 
 use gpx_split::limit::Limit;
@@ -67,10 +68,12 @@ fn main() {
     let res = match trace {
         Trace::Route => run(path.clone(), out, Box::new(RouteSplitter::new(limit))),
         Trace::Track => run(path.clone(), out, Box::new(TrackSplitter::new(limit))),
-    };
-    res.unwrap();
+    }.unwrap_or_else(|err| {
+        println!("Problem processing GPX file: {}", err);
+        process::exit(1);
+    });
 
-    debug!("Splitting took {} microseconds.", now.elapsed().as_micros());
+    debug!("Splitting source into {} files took {} microseconds.", res, now.elapsed().as_micros());
 }
 
 fn run<T: 'static>(
