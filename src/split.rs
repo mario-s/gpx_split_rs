@@ -250,7 +250,7 @@ impl TrackSplitter {
 //--------------------------------------------------------------
 
 // clear the points and add the previous last one as the first
-fn clear_points(points: &Vec<Waypoint>) ->  Vec<Waypoint>{
+fn clear_points(points: &[Waypoint]) ->  Vec<Waypoint>{
     if let Some(last) = points.last() {
         return vec![last.clone()];
     }

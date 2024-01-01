@@ -39,11 +39,11 @@ impl Limit {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
             Limit::Length(max_length) => distance_all(points) > *max_length as f64,
-            Limit::Location(split_points, dist) => self.exceeds_loc(*dist, *&split_points, points),
+            Limit::Location(split_points, dist) => self.exceeds_loc(*dist, split_points, points),
         }
     }
 
-    fn exceeds_loc(&self, dist: u32, split_points: &Box<Vec<Waypoint>>, points: &[Waypoint]) -> bool {
+    fn exceeds_loc(&self, dist: u32, split_points: &Vec<Waypoint>, points: &[Waypoint]) -> bool {
         let len = points.len();
         if split_points.is_empty() || len < 2 {
             return false;
@@ -52,8 +52,8 @@ impl Limit {
         //map of distances and interception points
         let map = split_points.iter().filter_map(|p| {
             let line = (&points[len - 2], &points[len - 1]);
-            let ip = interception_point(&p, line);
-            let d = distance(&p, &ip);
+            let ip = interception_point(p, line);
+            let d = distance(p, &ip);
             if d < dist {
                 let d = (d * 1000.0) as i64;
                 Some((d, ip))
@@ -63,7 +63,7 @@ impl Limit {
         }).collect::<HashMap<_, _>>();
         //TODO: replace last point with the interception point, that has the shortest distance
 
-        return !map.is_empty();
+        !map.is_empty()
     }
 }
 
@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn exceeds_location_false() {
-        let lim = Limit::Location(Box::new(vec![]), 2);
+        let lim = Limit::Location(Box::default(), 2);
         assert!(!lim.exceeds(&[Waypoint::default()]));
         let lim = Limit::Location(Box::new(vec![Waypoint::default()]), 2);
         assert!(!lim.exceeds(&[Waypoint::default()]));
