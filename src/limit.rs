@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use gpx::Waypoint;
 use log::debug;
 
@@ -35,7 +35,7 @@ impl Limit {
         Limit::Location(Box::new(waypoints), distance)
     }
 
-    pub fn exceeds(&self, points: &[Waypoint]) -> bool {
+    pub fn exceeds(&self, points: &mut [Waypoint]) -> bool {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
             Limit::Length(max_length) => distance_all(points) > *max_length as f64,
@@ -43,15 +43,29 @@ impl Limit {
         }
     }
 
-    fn exceeds_loc(&self, dist: u32, split_points: &Vec<Waypoint>, points: &[Waypoint]) -> bool {
+    fn exceeds_loc(&self, dist: u32, split_points: &Vec<Waypoint>, points: &mut [Waypoint]) -> bool {
         let len = points.len();
         if split_points.is_empty() || len < 2 {
             return false;
         }
+        let line = (&points[len - 2], &points[len - 1]);
+        let map = self.interception_points(dist, split_points, line);
+        //replace last point with the interception point, that has the shortest distance
+        match map.first_key_value() {
+            Some(pair) => {
+                debug!("shortest distance in milimeter: {}", pair.0);
+                points[len-1] = pair.1.clone();
+                true
+            },
+            None => false
+        }
+    }
+
+    //creates a map of distances and interception points
+    fn interception_points(&self, dist: u32, split_points: &Vec<Waypoint>, line: (&Waypoint, &Waypoint)) -> BTreeMap<i64, Waypoint> {
         let dist = dist as f64;
-        //map of distances and interception points
-        let map = split_points.iter().filter_map(|p| {
-            let line = (&points[len - 2], &points[len - 1]);
+        split_points.iter().filter_map(|p| {
+
             let ip = interception_point(p, line);
             let d = distance(p, &ip);
             if d < dist {
@@ -60,10 +74,7 @@ impl Limit {
             } else {
                 None
             }
-        }).collect::<HashMap<_, _>>();
-        //TODO: replace last point with the interception point, that has the shortest distance
-
-        !map.is_empty()
+        }).collect::<BTreeMap<_, _>>()
     }
 }
 
@@ -89,15 +100,15 @@ mod tests {
     #[test]
     fn exceeds_location_false() {
         let lim = Limit::Location(Box::default(), 2);
-        assert!(!lim.exceeds(&[Waypoint::default()]));
+        assert!(!lim.exceeds(&mut [Waypoint::default()]));
         let lim = Limit::Location(Box::new(vec![Waypoint::default()]), 2);
-        assert!(!lim.exceeds(&[Waypoint::default()]));
+        assert!(!lim.exceeds(&mut [Waypoint::default()]));
     }
 
     #[test]
     fn exceeds_location_true() {
-        let lim = Limit::Location(Box::new(vec![Waypoint::new(Point::new(13.535369, 52.643826))]), 15);
-        let points = &[Waypoint::new(Point::new(13.533826, 52.643605)), Waypoint::new(Point::new(13.535629, 52.644021))];
+        let lim = Limit::Location(Box::new(vec![Waypoint::new(Point::new(13.535369, 52.643826)), Waypoint::new(Point::new(13.535368, 52.643825))]), 15);
+        let points = &mut [Waypoint::new(Point::new(13.533826, 52.643605)), Waypoint::new(Point::new(13.535629, 52.644021))];
         assert!(lim.exceeds(points));
     }
 }
