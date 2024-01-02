@@ -1,10 +1,8 @@
-use std::collections::BTreeMap;
 use gpx::Waypoint;
 use log::debug;
 
-use crate::geo::distance;
 use crate::geo::distance_all;
-use crate::geo::interception_point;
+use crate::geo::interception_points;
 
 
 /// checks if the points exceed a defined limit.
@@ -49,7 +47,7 @@ impl Limit {
             return false;
         }
         let line = (&points[len - 2], &points[len - 1]);
-        let map = self.interception_points(dist, split_points, line);
+        let map = interception_points(dist, split_points, line);
         //replace last point with the interception point, that has the shortest distance
         match map.first_key_value() {
             Some(pair) => {
@@ -59,22 +57,6 @@ impl Limit {
             },
             None => false
         }
-    }
-
-    //creates a map of distances and interception points
-    fn interception_points(&self, dist: u32, split_points: &Vec<Waypoint>, line: (&Waypoint, &Waypoint)) -> BTreeMap<i64, Waypoint> {
-        let dist = dist as f64;
-        split_points.iter().filter_map(|p| {
-
-            let ip = interception_point(p, line);
-            let d = distance(p, &ip);
-            if d < dist {
-                let d = (d * 1000.0) as i64;
-                Some((d, ip))
-            } else {
-                None
-            }
-        }).collect::<BTreeMap<_, _>>()
     }
 }
 

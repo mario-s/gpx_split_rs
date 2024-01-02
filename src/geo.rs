@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use geo_types::{coord, Rect};
 use geo_types::Point as Geopoint;
 use gpx::{Gpx, Waypoint};
@@ -78,6 +79,25 @@ fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
         .map(|p| p.point())
         .map(|p| point!(x: p.x(), y: p.y()))
         .collect()
+}
+
+/// This creates a map of distances and interception points from each split point to the line.
+/// If the distance is above the min_dist, the interception point is not considered.
+/// The map is sorted, where the first entry is the shortest distance with the corresponding interception point.
+/// The unit of the distance is milimeter.
+pub fn interception_points(min_dist: u32, split_points: &[Waypoint], line: (&Waypoint, &Waypoint)) -> BTreeMap<i64, Waypoint> {
+    let min_dist = min_dist as f64;
+    split_points.iter().filter_map(|p| {
+
+        let ip = interception_point(p, line);
+        let dist = distance(p, &ip);
+        if dist < min_dist {
+            let dist = (dist * 1000.0) as i64;
+            Some((dist, ip))
+        } else {
+            None
+        }
+    }).collect::<BTreeMap<_, _>>()
 }
 
 /// A straight line between two points, on the earth surface is a geodesic.
