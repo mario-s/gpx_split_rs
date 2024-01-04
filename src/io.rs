@@ -64,7 +64,7 @@ fn create_path(path: &str, counter: usize) -> Result<String, Error> {
 
 /// Function to convert an GpxError
 fn to_error(gpx_err: GpxError) -> Error {
-    Error::new(ErrorKind::Other, gpx_err.to_string())
+    Error::new(ErrorKind::InvalidData, gpx_err.to_string())
 }
 
 #[cfg(test)]
