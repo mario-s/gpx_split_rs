@@ -9,4 +9,5 @@ fn main() {
     copy_to_output("tests/res/track_p.gpx", &env::var(KEY).unwrap()).expect(MSG);
     copy_to_output("tests/res/route_l.gpx", &env::var(KEY).unwrap()).expect(MSG);
     copy_to_output("tests/res/route_p.gpx", &env::var(KEY).unwrap()).expect(MSG);
+    copy_to_output("tests/res/pois.gpx", &env::var(KEY).unwrap()).expect(MSG);
 }

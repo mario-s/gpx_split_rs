@@ -8,7 +8,7 @@ use crate::geo::fit_bounds;
 use crate::io::*;
 use crate::limit::Limit;
 
-///common context for splitters
+/// common context for splitters
 pub struct Context<T> {
     input_file: String,
     output_file: Option<String>,
@@ -59,7 +59,7 @@ impl<T> Context<T> {
 
 //--------------------------------------------------------------
 
-/// Trait for impl which split a route or track.
+/// Trait which splits a route or track.
 ///
 pub trait Splitter<T> {
     fn traces(&self, gpx: Gpx) -> Vec<T>;

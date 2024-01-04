@@ -1,6 +1,8 @@
 use gpx::Waypoint;
 use log::debug;
+use log::trace;
 
+use crate::io::read_gpx;
 use crate::geo::distance_all;
 use crate::geo::interception_points;
 
@@ -16,20 +18,26 @@ pub enum Limit {
 }
 
 impl Limit {
+    /// Creates a new limit of points.
     pub fn points(max_points: u32) -> Self {
         debug!("maximum number of points: {}", max_points);
         Limit::Points(max_points)
     }
 
+    /// Creates a new limit of length in meter.
     pub fn length(max_length: u32) -> Self {
         debug!("maximum length between points: {}", max_length);
         Limit::Length(max_length)
     }
 
+    /// Create a bnew limit for a distance to locations.
     pub fn location(waypoint_file: String, distance: u32) -> Self {
-        debug!("reading waypoints for splitting at location from: {}", waypoint_file);
+        trace!("reading waypoints for splitting at location from: {}", waypoint_file);
+        //there is nothing much we can do here, just give up with a helpful error message
+        let gpx = read_gpx(&waypoint_file).expect("unable to read file with split points");
         debug!("minimum distance for location to split: {}", distance);
-        let waypoints: Vec<Waypoint> = vec![];
+        let waypoints = gpx.waypoints;
+        debug!("number of waypoints for splitting: {}", waypoints.len());
         Limit::Location(Box::new(waypoints), distance)
     }
 
@@ -69,10 +77,10 @@ mod tests {
 
     #[test]
     fn location() {
-        let lim = Limit::location("waypoint_file".to_string(), 10);
+        let lim = Limit::location("target/debug/pois.gpx".to_string(), 10);
         match lim {
             Limit::Location(waypoints, dist) => {
-                assert_eq!(0, waypoints.len());
+                assert_eq!(10, waypoints.len());
                 assert_eq!(10, dist)
             },
             _ => panic!("unexpected result")
