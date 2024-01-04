@@ -102,6 +102,17 @@ pub fn interception_points(min_dist: u32, split_points: &[Waypoint], line: (&Way
 
 /// A straight line between two points, on the earth surface is a geodesic.
 /// The closest point on a geodesic to another point, is referred to as the interception point.
+/// ```
+/// use gpx::Waypoint;
+/// use geo::Point;
+/// use gpx_split::prelude::*;
+/// use approx_eq::assert_approx_eq;
+///
+/// let p = Waypoint::new(Point::new(13.535369, 52.643826));
+/// let ip = interception_point(&p, (&Waypoint::new(Point::new(13.533826, 52.643605)), &Waypoint::new(Point::new(13.535629, 52.644021))));
+/// assert_approx_eq!(13.535308155, ip.point().x());
+/// assert_approx_eq!(52.643936975, ip.point().y());
+/// ```
 pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint {
     let p1 = geodesic.0.point();
     let p1 = point!(x: p1.x(), y: p1.y());
