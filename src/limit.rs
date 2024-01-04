@@ -45,22 +45,22 @@ impl Limit {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
             Limit::Length(max_length) => distance_all(points) > *max_length as f64,
-            Limit::Location(split_points, dist) => self.exceeds_loc(*dist, split_points, points),
+            Limit::Location(split_points, dist) => self.exceeds_loc(split_points, *dist, points),
         }
     }
 
-    fn exceeds_loc(&self, dist: u32, split_points: &Vec<Waypoint>, points: &mut [Waypoint]) -> bool {
+    fn exceeds_loc(&self, split_points: &[Waypoint], dist: u32, points: &mut [Waypoint]) -> bool {
         let len = points.len();
         if split_points.is_empty() || len < 2 {
             return false;
         }
         let line = (&points[len - 2], &points[len - 1]);
-        let map = interception_points(dist, split_points, line);
+        let mut map = interception_points(dist, split_points, line);
         //replace last point with the interception point, that has the shortest distance
-        match map.first_key_value() {
+        match map.pop_first() {
             Some(pair) => {
                 debug!("shortest distance in milimeter: {}", pair.0);
-                points[len-1] = pair.1.clone();
+                points[len-1] = pair.1;
                 true
             },
             None => false
