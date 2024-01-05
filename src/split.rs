@@ -37,7 +37,7 @@ impl<T> Context<T> {
             debug!("{} traces after splitting", new_traces.len());
             return self.write(gpx, new_traces);
         }
-        Ok(len)
+        Ok(0)
     }
 
     fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {

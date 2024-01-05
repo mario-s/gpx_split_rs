@@ -34,7 +34,7 @@ impl Limit {
     pub fn location(waypoint_file: String, distance: u32) -> Self {
         trace!("reading waypoints for splitting at location from: {}", waypoint_file);
         //there is nothing much we can do here, just give up with a helpful error message
-        let gpx = read_gpx(&waypoint_file).expect("can't read file with split points");
+        let gpx = read_gpx(&waypoint_file).expect("can't read file with splitting points");
         debug!("minimum distance for location to split: {}", distance);
         let waypoints = gpx.waypoints;
         debug!("number of waypoints for splitting: {}", waypoints.len());
@@ -88,7 +88,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "can't read file with split points: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }")]
+    #[should_panic(expected = "can't read file with splitting points: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }")]
     fn wrong_location() {
         Limit::location("pois.gpx".to_string(), 10);
     }

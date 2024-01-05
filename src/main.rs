@@ -26,7 +26,7 @@ struct Arguments {
     /// Path for output file, e.g. foo/bar.gpx. The program creates then foo/bar_0.gpx, foo/bar_1.gpx and so on
     #[arg(short, long)]
     output: Option<String>,
-    /// Path to a file that contains the points to split a track/route near them. If not provided, the file to split will be used
+    /// Path to a file that contains the splitting points for a track/route. If not provided, the file to split will be used
     #[arg(short, long)]
     near: Option<String>,
 }
