@@ -108,10 +108,10 @@ pub fn interception_points(min_dist: u32, split_points: &[Waypoint], line: (&Way
 /// use gpx_split::prelude::*;
 /// use approx_eq::assert_approx_eq;
 ///
-/// let p = Waypoint::new(Point::new(13.535369, 52.643826));
-/// let ip = interception_point(&p, (&Waypoint::new(Point::new(13.533826, 52.643605)), &Waypoint::new(Point::new(13.535629, 52.644021))));
-/// assert_approx_eq!(13.535308155, ip.point().x());
-/// assert_approx_eq!(52.643936975, ip.point().y());
+/// let p = Waypoint::new(Point::new(0.0, 1.0));
+/// let ip = interception_point(&p, (&Waypoint::new(Point::new(-1.0, 0.0)), &Waypoint::new(Point::new(1.0, 0.0))));
+/// assert_approx_eq!(0.4094528, ip.point().x());
+/// assert_approx_eq!(0.0, ip.point().y());
 /// ```
 pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint {
     let p1 = geodesic.0.point();
@@ -185,11 +185,28 @@ mod tests {
     }
 
     #[test]
+    fn interception_points_min() {
+        let dist = 34000;
+        let line = (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0));
+        let split_points = [waypoint(-0.5, 1.5), waypoint(-0.1, 0.4),
+            waypoint(0.0, 0.2), waypoint(0.5, 0.3)];
+        let mut ips = interception_points(dist, &split_points, line);
+        assert_eq!(2, ips.len());
+        let first = ips.pop_first();
+        let first = first.unwrap_or((0, Waypoint::default())).0;
+        let second = ips.pop_first();
+        let second = second.unwrap_or((0, Waypoint::default())).0;
+        let dist = (dist * 1000) as i64; //convert to milimeter
+        assert!(second < dist);
+        assert!(first < second);
+    }
+
+    #[test]
     fn distance_to_line() {
         //0.00028° = 0°0'1" ~ 30.9 m
-        let p = waypoint(13.535369, 52.643826);
-        let ip = interception_point(&p, (&waypoint(13.533826, 52.643605), &waypoint(13.535629, 52.644021)));
+        let p = waypoint(0.0, 0.00028);
+        let ip = interception_point(&p, (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0)));
         let dist_p_ip = distance(&p, &ip);
-        assert_approx_eq!(14.077962265699961, dist_p_ip);
+        assert_approx_eq!(30.9607975, dist_p_ip);
     }
 }
