@@ -9,17 +9,17 @@ Inspired by my [earlier project](https://github.com/mario-s/gpx_split_py) which 
 The type of splitting is controlled with command line arguments. Here are some samples to cut a track or route.
 
 - split a track after 500 points (default)<br/>
-`gpx_split Track.gpx`
+`gpx_split My_Track.gpx`
 - split a route after 600 points<br/>
-`gpx_split -t Route.gpx -m 600`
-- split a track after 50 km (unit is in meter)<br/>
-`gpx_split Track.gpx -b len -m 50000`
+`gpx_split -t route My_Route.gpx -m 600`
+- split a track after 50 km (unit is meter)<br/>
+`gpx_split My_Track.gpx -b len -m 50000`
 - split a route after 50 km<br/>
-`gpx_split -t Route.gpx -b len -m 50000`
+`gpx_split -t route My_Route.gpx -b len -m 50000`
 - split a track at some locations with a maximum distance to a POI of 20 m (if argument n is not provided, the program will look for splitting points in the source file)<br/>
-`gpx_split Track.gpx -b loc -m 20 -n POI.gpx`
+`gpx_split My_Track.gpx -b loc -m 20 -n POI.gpx`
 - split a route at some locations with a maximum distance to a POI of 10 m<br/>
-`gpx_split -t Route.gpx -b loc -m 10 -n POI.gpx`
+`gpx_split -t route My_Route.gpx -b loc -m 10 -n POI.gpx`
 
 The points at a location for splitting must not be embedded in a track or route. For instance the content of POI.gpx would look like this:
 
