@@ -10,9 +10,7 @@ use geo::point;
 ///
 pub fn distance(p1: &Waypoint, p2: &Waypoint) -> f64 {
     let point = |p: &Waypoint| {point!(x: p.point().x(), y: p.point().y())};
-    let p1 = point(p1);
-    let p2 = point(p2);
-    p1.geodesic_distance(&p2)
+    point(p1).geodesic_distance(&point(p2))
 }
 
 /// Calculates the distance of all waypoints in the collection.
