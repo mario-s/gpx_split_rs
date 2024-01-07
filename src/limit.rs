@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use geo_types::coord;
 use gpx::Waypoint;
 use log::debug;
@@ -5,7 +6,7 @@ use log::trace;
 
 use crate::io::read_gpx;
 use crate::geo::distance_all;
-use crate::geo::interception_points;
+use crate::geo::{distance, interception_point};
 
 
 /// checks if the points exceed a defined limit.
@@ -71,12 +72,35 @@ impl Limit {
     }
 }
 
+// This creates a map of distances and interception points from each split point to the line.
+// If the distance is above the min_dist, the interception point is not considered.
+// The map is sorted, where the first entry is the shortest distance with the corresponding interception point.
+// The unit of the distance is milimeter.
+fn interception_points(min_dist: u32, split_points: &[Waypoint], line: (&Waypoint, &Waypoint)) -> BTreeMap<i64, Waypoint> {
+    let min_dist = min_dist as f64;
+    split_points.iter().filter_map(|p| {
+
+        let ip = interception_point(p, line);
+        let dist = distance(p, &ip);
+        if dist < min_dist {
+            let dist = (dist * 1000.0) as i64;
+            Some((dist, ip))
+        } else {
+            None
+        }
+    }).collect::<BTreeMap<_, _>>()
+}
+
 #[cfg(test)]
 mod tests {
     use geo_types::Point;
     use gpx::Waypoint;
 
-    use crate::limit::Limit;
+    use super::*;
+
+    fn waypoint(x: f64, y: f64) -> Waypoint {
+        Waypoint::new(Point::new(x, y))
+    }
 
     #[test]
     fn location() {
@@ -106,8 +130,26 @@ mod tests {
 
     #[test]
     fn exceeds_location_true() {
-        let lim = Limit::Location(Box::new(vec![Waypoint::new(Point::new(13.535369, 52.643826)), Waypoint::new(Point::new(13.535368, 52.643825))]), 15);
-        let points = &mut [Waypoint::new(Point::new(13.533826, 52.643605)), Waypoint::new(Point::new(13.535629, 52.644021))];
+        let lim = Limit::Location(Box::new(vec![waypoint(13.535369, 52.643826), waypoint(13.535368, 52.643825)]), 15);
+        let points = &mut [waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)];
         assert!(lim.exceeds(points));
+    }
+
+    #[test]
+    fn interception_points_min() {
+
+        let dist = 34000;
+        let line = (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0));
+        let split_points = [waypoint(-0.5, 1.5), waypoint(-0.1, 0.4),
+            waypoint(0.0, 0.2), waypoint(0.5, 0.3)];
+        let mut ips = interception_points(dist, &split_points, line);
+        assert_eq!(2, ips.len());
+        let first = ips.pop_first();
+        let first = first.unwrap_or((0, Waypoint::default())).0;
+        let second = ips.pop_first();
+        let second = second.unwrap_or((0, Waypoint::default())).0;
+        let dist = (dist * 1000) as i64; //convert to milimeter
+        assert!(second < dist);
+        assert!(first < second);
     }
 }

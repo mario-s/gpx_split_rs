@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 use geo_types::{coord, Rect};
 use geo_types::Point as Geopoint;
 use gpx::{Gpx, Waypoint};
@@ -79,25 +78,6 @@ fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
         .map(|p| p.point())
         .map(|p| point!(x: p.x(), y: p.y()))
         .collect()
-}
-
-/// This creates a map of distances and interception points from each split point to the line.
-/// If the distance is above the min_dist, the interception point is not considered.
-/// The map is sorted, where the first entry is the shortest distance with the corresponding interception point.
-/// The unit of the distance is milimeter.
-pub fn interception_points(min_dist: u32, split_points: &[Waypoint], line: (&Waypoint, &Waypoint)) -> BTreeMap<i64, Waypoint> {
-    let min_dist = min_dist as f64;
-    split_points.iter().filter_map(|p| {
-
-        let ip = interception_point(p, line);
-        let dist = distance(p, &ip);
-        if dist < min_dist {
-            let dist = (dist * 1000.0) as i64;
-            Some((dist, ip))
-        } else {
-            None
-        }
-    }).collect::<BTreeMap<_, _>>()
 }
 
 /// A straight line between two points, on the earth surface is a geodesic.
@@ -182,23 +162,6 @@ mod tests {
         assert_eq!(-73.9761399, rect.min().y);
         assert_eq!(40.7767644, rect.max().x);
         assert_eq!(-73.9673991, rect.max().y);
-    }
-
-    #[test]
-    fn interception_points_min() {
-        let dist = 34000;
-        let line = (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0));
-        let split_points = [waypoint(-0.5, 1.5), waypoint(-0.1, 0.4),
-            waypoint(0.0, 0.2), waypoint(0.5, 0.3)];
-        let mut ips = interception_points(dist, &split_points, line);
-        assert_eq!(2, ips.len());
-        let first = ips.pop_first();
-        let first = first.unwrap_or((0, Waypoint::default())).0;
-        let second = ips.pop_first();
-        let second = second.unwrap_or((0, Waypoint::default())).0;
-        let dist = (dist * 1000) as i64; //convert to milimeter
-        assert!(second < dist);
-        assert!(first < second);
     }
 
     #[test]
