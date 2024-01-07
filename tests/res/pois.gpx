@@ -12,7 +12,7 @@ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/
   <wpt lat="52.854709625244141" lon="13.173959255218506">
     <ele>0</ele>
     <time>2021-05-11T10:38:41Z</time>
-    <name>Stop1"</name>
+    <name>Stop1</name>
     <sym>Restaurant</sym>
     <type>user</type>
   </wpt>

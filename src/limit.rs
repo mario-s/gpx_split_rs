@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use geo_types::coord;
 use gpx::Waypoint;
 use log::debug;
 use log::trace;
@@ -43,53 +42,65 @@ impl Limit {
         Limit::Location(Box::new(waypoints), distance)
     }
 
-    pub fn exceeds(&self, points: &mut [Waypoint]) -> bool {
+    pub fn exceeds(&mut self, points: &mut [Waypoint]) -> bool {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
             Limit::Length(max_length) => distance_all(points) > *max_length as f64,
-            Limit::Location(split_points, dist) => self.exceeds_loc(split_points, *dist, points),
+            Limit::Location(ref mut split_points, dist) => Limit::exceeds_location(*dist, split_points, points),
         }
     }
 
-    fn exceeds_loc(&self, split_points: &[Waypoint], dist: u32, points: &mut [Waypoint]) -> bool {
+    fn exceeds_location(dist: u32, split_points: &mut Box<Vec<Waypoint>>, points: &mut [Waypoint]) -> bool {
         let len = points.len();
+        // early return when there are no splitting points or we don't have a line yet
         if split_points.is_empty() || len < 2 {
             return false;
         }
-        let line = (&points[len - 2], &points[len - 1]);
-        let mut map = interception_points(dist, split_points, line);
+
+        let segment = (&points[len - 2], &points[len - 1]);
+        let mut map = Limit::interception_points(dist, split_points, segment);
+
         //replace last point with the interception point, that has the shortest distance
         match map.pop_first() {
-            Some(pair) => {
-                debug!("shortest distance in milimeter: {}", pair.0);
-                let point = pair.1.point();
-                let last = &points[len-1];
-                last.point().0 = coord! {x: point.x(), y: point.y()};
+            Some(entry) => {
+                debug!("shortest distance in milimeter: {}", entry.0);
+                //Each split point can be used only once. When we add an interception point,
+                //we will also remove the splitting point. The consequences of keeping the splitting point
+                //would be weird tracks, containing just a few points till the next interception point.
+                let index = entry.1.0;
+                split_points.remove(index);
+                //finally the interception point
+                let point = entry.1.1;
+                points[len-1] = point;
                 true
             },
             None => false
         }
     }
+
+    // This creates a map of distances and interception points from each split point to the segment.
+    // If the distance is above the min_dist, the interception point is not considered.
+    // The map is sorted, where the first entry is the shortest distance with the corresponding interception point.
+    // The unit of the distance is milimeter.
+    fn interception_points(dist: u32, split_points: &mut Box<Vec<Waypoint>>, segment: (&Waypoint, &Waypoint)) -> BTreeMap<i64, (usize, Waypoint)> {
+        let min_dist = dist as f64;
+
+        split_points.iter().enumerate().filter_map(|(index, split_point)| {
+            let mut ip = interception_point(split_point, segment);
+            let dist = distance(split_point, &ip);
+            if dist < min_dist {
+                let dist = (dist * 1000.0) as i64;
+                if let Some(comment) = &split_point.comment {
+                    ip.comment = Some(format!("nearby {}", comment).to_string());
+                }
+                Some((dist, (index, ip)))
+            } else {
+                None
+            }
+        }).collect::<BTreeMap<_, _>>()
+    }
 }
 
-// This creates a map of distances and interception points from each split point to the line.
-// If the distance is above the min_dist, the interception point is not considered.
-// The map is sorted, where the first entry is the shortest distance with the corresponding interception point.
-// The unit of the distance is milimeter.
-fn interception_points(min_dist: u32, split_points: &[Waypoint], line: (&Waypoint, &Waypoint)) -> BTreeMap<i64, Waypoint> {
-    let min_dist = min_dist as f64;
-    split_points.iter().filter_map(|p| {
-
-        let ip = interception_point(p, line);
-        let dist = distance(p, &ip);
-        if dist < min_dist {
-            let dist = (dist * 1000.0) as i64;
-            Some((dist, ip))
-        } else {
-            None
-        }
-    }).collect::<BTreeMap<_, _>>()
-}
 
 #[cfg(test)]
 mod tests {
@@ -107,7 +118,7 @@ mod tests {
         let lim = Limit::location("target/debug/pois.gpx".to_string(), 10);
         match lim {
             Limit::Location(waypoints, dist) => {
-                assert_eq!(10, waypoints.len());
+                assert_eq!(2, waypoints.len());
                 assert_eq!(10, dist)
             },
             _ => panic!("unexpected result")
@@ -122,32 +133,31 @@ mod tests {
 
     #[test]
     fn exceeds_location_false() {
-        let lim = Limit::Location(Box::default(), 2);
+        let mut lim = Limit::Location(Box::default(), 2);
         assert!(!lim.exceeds(&mut [Waypoint::default()]));
-        let lim = Limit::Location(Box::new(vec![Waypoint::default()]), 2);
+        let mut lim = Limit::Location(Box::new(vec![Waypoint::default()]), 2);
         assert!(!lim.exceeds(&mut [Waypoint::default()]));
     }
 
     #[test]
     fn exceeds_location_true() {
-        let lim = Limit::Location(Box::new(vec![waypoint(13.535369, 52.643826), waypoint(13.535368, 52.643825)]), 15);
+        let mut lim = Limit::Location(Box::new(vec![waypoint(13.535369, 52.643826), waypoint(13.535368, 52.643825)]), 15);
         let points = &mut [waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)];
         assert!(lim.exceeds(points));
     }
 
     #[test]
     fn interception_points_min() {
-
         let dist = 34000;
         let line = (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0));
-        let split_points = [waypoint(-0.5, 1.5), waypoint(-0.1, 0.4),
-            waypoint(0.0, 0.2), waypoint(0.5, 0.3)];
-        let mut ips = interception_points(dist, &split_points, line);
+        let mut split_points = Box::new(vec![waypoint(-0.5, 1.5), waypoint(-0.1, 0.4),
+            waypoint(0.0, 0.2), waypoint(0.5, 0.3)]);
+        let mut ips = Limit::interception_points(dist, &mut split_points, line);
         assert_eq!(2, ips.len());
         let first = ips.pop_first();
-        let first = first.unwrap_or((0, Waypoint::default())).0;
+        let first = first.unwrap_or((0, (0, Waypoint::default()))).0;
         let second = ips.pop_first();
-        let second = second.unwrap_or((0, Waypoint::default())).0;
+        let second = second.unwrap_or((0, (0, Waypoint::default()))).0;
         let dist = (dist * 1000) as i64; //convert to milimeter
         assert!(second < dist);
         assert!(first < second);

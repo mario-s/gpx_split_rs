@@ -85,6 +85,6 @@ fn run<T: 'static>(
     output: Option<String>,
     splitter: Box<dyn Splitter<T>>,
 ) -> Result<usize, Error> {
-    let c = Context::new(path.to_string(), output, splitter);
+    let mut c = Context::new(path.to_string(), output, splitter);
     c.run()
 }

@@ -28,7 +28,7 @@ impl<T> Context<T> {
         }
     }
 
-    pub fn run(&self) -> Result<usize, Error> {
+    pub fn run(&mut self) -> Result<usize, Error> {
         let gpx = read_gpx(self.input_file.as_str())?;
         let origin = self.splitter.traces(gpx.clone());
         let len = origin.len();
@@ -63,7 +63,7 @@ impl<T> Context<T> {
 ///
 pub trait Splitter<T> {
     fn traces(&self, gpx: Gpx) -> Vec<T>;
-    fn split(&self, origin: &[T]) -> Vec<T>;
+    fn split(&mut self, origin: &[T]) -> Vec<T>;
     fn write(
         &self,
         path: &str,
@@ -94,7 +94,7 @@ impl Splitter<Route> for RouteSplitter {
 
     /// splits the given routes into new routes where the number of points of that route are limted
     ///
-    fn split(&self, routes: &[Route]) -> Vec<Route> {
+    fn split(&mut self, routes: &[Route]) -> Vec<Route> {
         let mut new_routes = Vec::new();
         let mut points = Vec::new();
         routes.iter().for_each(|route| {
@@ -167,7 +167,7 @@ impl Splitter<Track> for TrackSplitter {
 
     /// splits the given tracks into new tracks where the number of points of that tracks are limted
     ///
-    fn split(&self, tracks: &[Track]) -> Vec<Track> {
+    fn split(&mut self, tracks: &[Track]) -> Vec<Track> {
         let mut new_tracks = Vec::new();
         let mut points = Vec::new();
         tracks.iter().for_each(|track| {
