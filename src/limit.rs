@@ -1,3 +1,4 @@
+use geo_types::coord;
 use gpx::Waypoint;
 use log::debug;
 use log::trace;
@@ -60,7 +61,9 @@ impl Limit {
         match map.pop_first() {
             Some(pair) => {
                 debug!("shortest distance in milimeter: {}", pair.0);
-                points[len-1] = pair.1;
+                let point = pair.1.point();
+                let last = &points[len-1];
+                last.point().0 = coord! {x: point.x(), y: point.y()};
                 true
             },
             None => false
