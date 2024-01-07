@@ -91,8 +91,8 @@ impl Limit {
             let dist = distance(split_point, &ip);
             if dist < min_dist {
                 let dist = (dist * 1000.0) as i64;
-                if let Some(comment) = &split_point.comment {
-                    ip.comment = Some(format!("nearby {}", comment).to_string());
+                if let Some(name) = &split_point.name {
+                    ip.name = Some(format!("nearby {}", name).to_string());
                 }
                 Some((dist, (index, ip)))
             } else {
