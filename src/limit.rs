@@ -87,6 +87,7 @@ impl Limit {
 
         split_points.iter().enumerate().filter_map(|(index, split_point)| {
             let mut ip = interception_point(split_point, segment);
+            //TODO check if interception point is part of segment, if not we return None
             let dist = distance(split_point, &ip);
             if dist < min_dist {
                 let dist = (dist * 1000.0) as i64;
