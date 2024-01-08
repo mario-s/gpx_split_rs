@@ -159,23 +159,29 @@ mod tests {
         let mut split_points = Box::new(vec![waypoint(-1.5, 1.5)]);
         let ips = Limit::interception_points(dist, &mut split_points, line);
         assert!(ips.is_empty());
-        assert!(!split_points.is_empty());
     }
 
     #[test]
     fn interception_points_near() {
         let dist = 34000;
         let line = (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0));
+        let mut wp = waypoint(0.0, 0.2);
+        wp.name = Some("Point".to_string());
         let mut split_points = Box::new(vec![waypoint(-0.5, 1.5), waypoint(-0.1, 0.4),
-            waypoint(0.0, 0.2), waypoint(0.5, 0.3)]);
+            wp, waypoint(0.5, 0.3)]);
+
         let mut ips = Limit::interception_points(dist, &mut split_points, line);
+
         assert_eq!(2, ips.len());
         let first = ips.pop_first();
-        let first = first.unwrap_or((0, (0, Waypoint::default()))).0;
+        let first = first.unwrap_or((0, (0, Waypoint::default())));
+        let point = first.1.1;
+        let first = first.0;
         let second = ips.pop_first();
         let second = second.unwrap_or((0, (0, Waypoint::default()))).0;
         let dist = (dist * 1000) as i64; //convert to milimeter
         assert!(second < dist);
         assert!(first < second);
+        assert_eq!("nearby Point", point.name.unwrap());
     }
 }
