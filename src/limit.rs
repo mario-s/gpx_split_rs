@@ -4,8 +4,7 @@ use log::debug;
 use log::trace;
 
 use crate::io::read_gpx;
-use crate::geo::distance_all;
-use crate::geo::{distance, interception_point};
+use crate::geo::{distance, distance_all, interception_point, is_near_segment};
 
 
 /// checks if the points exceed a defined limit.
@@ -50,7 +49,7 @@ impl Limit {
         }
     }
 
-    fn exceeds_location(dist: u32, split_points: &mut Box<Vec<Waypoint>>, points: &mut [Waypoint]) -> bool {
+    fn exceeds_location(dist: u32, split_points: &mut Vec<Waypoint>, points: &mut [Waypoint]) -> bool {
         let len = points.len();
         // early return when there are no splitting points or we don't have a line yet
         if split_points.is_empty() || len < 2 {
@@ -82,14 +81,19 @@ impl Limit {
     // If the distance is above the min_dist, the interception point is not considered.
     // The map is sorted, where the first entry is the shortest distance with the corresponding interception point.
     // The unit of the distance is milimeter.
-    fn interception_points(dist: u32, split_points: &mut Box<Vec<Waypoint>>, segment: (&Waypoint, &Waypoint)) -> BTreeMap<i64, (usize, Waypoint)> {
+    fn interception_points(dist: u32, split_points: &mut [Waypoint], segment: (&Waypoint, &Waypoint)) -> BTreeMap<i64, (usize, Waypoint)> {
         let min_dist = dist as f64;
 
         split_points.iter().enumerate().filter_map(|(index, split_point)| {
             let mut ip = interception_point(split_point, segment);
-            //TODO check if interception point is part of segment, if not we return None
+            // The interception point can be far off from the segment.
+            // So we consider only those which are within the distance.
+            if !is_near_segment(&ip, segment, dist as f64) {
+                return None;
+            }
             let dist = distance(split_point, &ip);
             if dist < min_dist {
+                debug!("interception point is near segment with a distance of {} meter", dist);
                 let dist = (dist * 1000.0) as i64;
                 if let Some(name) = &split_point.name {
                     ip.name = Some(format!("nearby {}", name).to_string());
