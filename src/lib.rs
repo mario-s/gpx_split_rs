@@ -4,7 +4,7 @@ pub mod limit;
 pub mod split;
 
 /// A prelude which re-exports the traits for manipulating objects in this
-/// crate. Typically imported with `use gpx_split::prelude::*`.
+/// crate. Typically imported with `use gpx_split::loc::*`.
 pub mod loc {
     pub use crate::geo::*;
 }
