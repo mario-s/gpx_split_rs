@@ -146,13 +146,24 @@ mod tests {
 
     #[test]
     fn exceeds_location_true() {
-        let mut lim = Limit::Location(Box::new(vec![waypoint(13.535369, 52.643826), waypoint(13.535368, 52.643825)]), 15);
+        let split_points = Box::new(vec![waypoint(13.535369, 52.643826), waypoint(13.535368, 52.643825)]);
+        let mut lim = Limit::Location(split_points, 15);
         let points = &mut [waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)];
         assert!(lim.exceeds(points));
     }
 
     #[test]
-    fn interception_points_min() {
+    fn interception_points_not_near() {
+        let dist = 34000;
+        let line = (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0));
+        let mut split_points = Box::new(vec![waypoint(-1.5, 1.5)]);
+        let ips = Limit::interception_points(dist, &mut split_points, line);
+        assert!(ips.is_empty());
+        assert!(!split_points.is_empty());
+    }
+
+    #[test]
+    fn interception_points_near() {
         let dist = 34000;
         let line = (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0));
         let mut split_points = Box::new(vec![waypoint(-0.5, 1.5), waypoint(-0.1, 0.4),

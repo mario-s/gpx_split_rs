@@ -83,7 +83,7 @@ fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
 /// ```
 /// use gpx::Waypoint;
 /// use geo::Point;
-/// use gpx_split::prelude::*;
+/// use gpx_split::loc::*;
 /// use approx_eq::assert_approx_eq;
 ///
 /// let p = Waypoint::new(Point::new(0.0, 1.0));
