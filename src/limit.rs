@@ -7,7 +7,7 @@ use crate::io::read_gpx;
 use crate::geo::{distance, distance_all, interception_point, is_near_segment};
 
 
-/// checks if the points exceed a defined limit.
+/// Checks if the points exceed a defined limit.
 pub enum Limit {
     /// strategy to check limit based on the number of points
     Points(u32),
@@ -30,7 +30,7 @@ impl Limit {
         Limit::Length(max_length)
     }
 
-    /// Create a bnew limit for a distance to locations.
+    /// Creates a new limit for a distance to locations.
     pub fn location(waypoint_file: String, distance: u32) -> Self {
         trace!("reading waypoints for splitting at location from: {}", waypoint_file);
         //there is nothing much we can do here, just give up with a helpful error message
@@ -41,6 +41,8 @@ impl Limit {
         Limit::Location(Box::new(waypoints), distance)
     }
 
+    /// If the points exceed a defined limit, (see enum values of [Limit])
+    /// this method returns true, else false.
     pub fn exceeds(&mut self, points: &mut [Waypoint]) -> bool {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,

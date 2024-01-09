@@ -16,6 +16,7 @@ pub struct Context<T> {
 }
 
 impl<T> Context<T> {
+    /// Constructs a new context.
     pub fn new(
         input_file: String,
         output_file: Option<String>,
@@ -28,6 +29,7 @@ impl<T> Context<T> {
         }
     }
 
+    /// Runs the context, which uses the [Splitter] to do the actual work.
     pub fn run(&mut self) -> Result<usize, Error> {
         let gpx = read_gpx(self.input_file.as_str())?;
         let origin = self.splitter.traces(gpx.clone());
@@ -60,10 +62,12 @@ impl<T> Context<T> {
 //--------------------------------------------------------------
 
 /// Trait which splits a route or track.
-///
 pub trait Splitter<T> {
+    /// Returns the trace to split.
     fn traces(&self, gpx: Gpx) -> Vec<T>;
+    /// Split the origin into new vector.
     fn split(&mut self, origin: &[T]) -> Vec<T>;
+    /// Write one new trace into a file.
     fn write(
         &self,
         path: &str,
@@ -74,13 +78,11 @@ pub trait Splitter<T> {
 }
 
 /// Splitter for routes.
-///
 pub struct RouteSplitter {
     limit: Limit,
 }
 
 /// Splitter for tracks.
-///
 pub struct TrackSplitter {
     limit: Limit,
 }
@@ -92,8 +94,7 @@ impl Splitter<Route> for RouteSplitter {
         gpx.routes
     }
 
-    /// splits the given routes into new routes where the number of points of that route are limted
-    ///
+    /// splits the given routes into new routes where the number of points of that route are limited
     fn split(&mut self, routes: &[Route]) -> Vec<Route> {
         let mut new_routes = Vec::new();
         let mut points = Vec::new();
@@ -123,9 +124,7 @@ impl Splitter<Route> for RouteSplitter {
         new_routes
     }
 
-    /// Writes the given route(s) into new files, when there are more than one route.
-    /// If there is only one route, we did not split anything, so no need to write.
-    ///
+    /// Writes the given route into a new file.
     fn write(
         &self,
         path: &str,
@@ -138,7 +137,7 @@ impl Splitter<Route> for RouteSplitter {
         let mut route = route.clone();
         thread::spawn(move || {
             let mut gpx = fit_bounds(gpx, &route.points);
-            route.name = append_index_to_name(route.name, index);
+            route.name = append_index(route.name, index);
             gpx.routes.clear();
             gpx.routes.push(route);
             write_gpx(gpx, &path, index)
@@ -147,6 +146,7 @@ impl Splitter<Route> for RouteSplitter {
 }
 
 impl RouteSplitter {
+    ///Constructs a new [Splitter] for a [Route].
     pub fn new(limit: Limit) -> Self {
         RouteSplitter { limit }
     }
@@ -165,8 +165,7 @@ impl Splitter<Track> for TrackSplitter {
         gpx.tracks
     }
 
-    /// splits the given tracks into new tracks where the number of points of that tracks are limted
-    ///
+    /// splits the given tracks into new tracks where the number of points of that tracks are limited
     fn split(&mut self, tracks: &[Track]) -> Vec<Track> {
         let mut new_tracks = Vec::new();
         let mut points = Vec::new();
@@ -200,9 +199,7 @@ impl Splitter<Track> for TrackSplitter {
         new_tracks
     }
 
-    /// Writes the given tracks into new files, when there are more than one route.
-    /// If there is only one track, we did not split anything, so no need to write.
-    ///
+    /// Writes the given track into a new file.
     fn write(
         &self,
         path: &str,
@@ -220,7 +217,7 @@ impl Splitter<Track> for TrackSplitter {
                 .flat_map(|s| s.points.iter().cloned())
                 .collect();
             let mut gpx = fit_bounds(gpx, &points);
-            track.name = append_index_to_name(track.name, index);
+            track.name = append_index(track.name, index);
             gpx.tracks.clear();
             gpx.tracks.push(track);
             gpx.tracks.shrink_to_fit();
@@ -231,12 +228,12 @@ impl Splitter<Track> for TrackSplitter {
 }
 
 impl TrackSplitter {
+    /// Constructs a new [Splitter] for a [Track].
     pub fn new(limit: Limit) -> Self {
         TrackSplitter { limit }
     }
 
     /// clone the source track and add new track segment with the points
-    ///
     fn clone_track(&self, src_track: &Track, points: &[Waypoint]) -> Track {
         let mut track_segment = TrackSegment::new();
         track_segment.points = points.to_vec();

@@ -110,13 +110,29 @@ pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) ->
     Waypoint::new(Geopoint::new(interception.x(), interception.y()))
 }
 
-/// Returns true if the point is on a line through the points from the segment distance,
-/// otherwise false. The parameter max is the maximum distance allowed to be considered as
-/// "near" in meter.
-///     segment     point  max
-/// |-------------|---+-----)---  line => true
+/// Returns true if the point is on the segment or behind one of the endpoints of the segement
+/// with an allowed maximum distance, otherwise false.
+/// The parameter max is the maximum distance allowed to be considered as "near" in meter.<br/>
+/// ```text
+/// ---  line
+///  )   max
+///  +   point
+/// |-|  segment
+///
+/// |-------------|---+-----)--- => true
 /// |-------+-----|---------)--- => true
 /// |-------------|---------)-+- => false
+/// ```
+/// Example
+/// ```
+/// use gpx::Waypoint;
+/// use geo::Point;
+/// use gpx_split::loc::*;
+///
+/// let point = Waypoint::new(Point::new(0.0, 1.0));
+/// let segment = (&Waypoint::new(Point::new(0.0, 0.5)), &Waypoint::new(Point::new(0.0, 1.0)));
+/// assert!(is_near_segment(&point, segment, 0.1));
+/// ```
 pub fn is_near_segment(point: &Waypoint, segment: (&Waypoint, &Waypoint), max: f64) -> bool {
     let dist_seg = distance(segment.0, segment.1);
     let dist_start_point = distance(segment.0, point);
