@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+creator="Code" version="1.1"
+xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <link href="https://www.google.com">
+      <text>POIs</text>
+    </link>
+    <time>2024-01-04T16:25:43Z</time>
+    <bounds maxlat="44.025105033069849" maxlon="12.406672211363912" minlat="41.984547637403011" minlon="10.077079888433218"/>
+  </metadata>
+  <wpt lat="52.854709625244141" lon="13.173959255218506">
+    <ele>0</ele>
+    <time>2021-05-11T10:38:41Z</time>
+    <name>Stop1</name>
+    <sym>Restaurant</sym>
+    <type>user</type>
+  </wpt>
+  <wpt lat="52.964637279510498" lon="12.98367261886596">
+    <ele>0</ele>
+    <time>2021-05-11T10:38:41Z</time>
+    <name>Stop2</name>
+    <sym>Restaurant</sym>
+    <type>user</type>
+  </wpt>
+</gpx>

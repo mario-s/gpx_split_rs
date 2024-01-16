@@ -1,25 +1,31 @@
 use geo_types::{coord, Rect};
+use geo_types::Point as Geopoint;
 use gpx::{Gpx, Waypoint};
-use haversine_rs::distance_vec;
-use haversine_rs::point::Point;
-use haversine_rs::units::Unit;
+use geo::prelude::*;
+use geo::Point;
+use geo::point;
 
-/// Calculates the distance of all waypoints in the track.
+/// Calculates the distance between the 2 waypoints.
 /// Returns result in Meter.
 ///
-pub fn distance_points(way_points: &[Waypoint]) -> f64 {
-    distance(collect_points(way_points))
+pub fn distance(p1: &Waypoint, p2: &Waypoint) -> f64 {
+    let point = |p: &Waypoint| {point!(x: p.point().x(), y: p.point().y())};
+    point(p1).geodesic_distance(&point(p2))
 }
 
-/// Calculates the distance between multiple points.
+/// Calculates the distance of all waypoints in the collection.
 /// Returns result in Meter.
 ///
-fn distance(points: Vec<Point>) -> f64 {
-    distance_vec(points, Unit::Meters)
+pub fn distance_all(points: &[Waypoint]) -> f64 {
+    let points = collect_points(points);
+    points
+    .iter().zip(points.iter().skip(1))
+    .map(|(&p1, &p2)| p1.geodesic_distance(&p2))
+    .sum()
 }
 
 /// This will adjust the bounds of the metadata, if they are set.
-/// The new bounding box will a Rect which contains min/max of x/y.
+/// The new bounding box is a rectangle which contains min/max of x/y.
 ///
 pub fn fit_bounds(mut gpx: Gpx, way_points: &Vec<Waypoint>) -> Gpx {
     if let Some(existing) = gpx.metadata {
@@ -42,19 +48,19 @@ fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
     let points = collect_points(way_points);
     let min_x = points
         .iter()
-        .map(|p| p.latitude)
+        .map(|p| p.y())
         .fold(f64::INFINITY, f64::min);
     let max_x = points
         .iter()
-        .map(|p| p.latitude)
+        .map(|p| p.y())
         .fold(f64::NEG_INFINITY, f64::max);
     let min_y = points
         .iter()
-        .map(|p| p.longitude)
+        .map(|p| p.x())
         .fold(f64::INFINITY, f64::min);
     let max_y = points
         .iter()
-        .map(|p| p.longitude)
+        .map(|p| p.x())
         .fold(f64::NEG_INFINITY, f64::max);
     Some(Rect::new(
         coord! { x: min_x, y: min_y },
@@ -64,33 +70,108 @@ fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
 
 /// Collect the points (x, y) from the given way points
 ///
-fn collect_points(way_points: &[Waypoint]) -> Vec<Point> {
-    way_points
+fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
+    points
         .iter()
         .map(|p| p.point())
-        .map(|p| Point::new(p.x(), p.y()))
+        .map(|p| point!(x: p.x(), y: p.y()))
         .collect()
+}
+
+/// A straight line between two points, on the earth surface is a geodesic.
+/// The closest point on a geodesic to another point, is referred to as the interception point.
+/// ```
+/// use gpx::Waypoint;
+/// use geo::Point;
+/// use gpx_split::loc::*;
+/// use approx_eq::assert_approx_eq;
+///
+/// let p = Waypoint::new(Point::new(0.0, 1.0));
+/// let ip = interception_point(&p, (&Waypoint::new(Point::new(-1.0, 0.0)), &Waypoint::new(Point::new(1.0, 0.0))));
+/// assert_approx_eq!(0.4094528, ip.point().x());
+/// assert_approx_eq!(0.0, ip.point().y());
+/// ```
+pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint {
+    let p1 = geodesic.0.point();
+    let p1 = point!(x: p1.x(), y: p1.y());
+    let p2 = geodesic.1.point();
+    let p2 = point!(x: p2.x(), y: p2.y());
+    let p3 = point.point();
+    let p3 = point!(x: p3.x(), y: p3.y());
+
+    // Calculate bearing from p1 to p2
+    let bearing = p1.geodesic_bearing(p2);
+
+    // Calculate geodesic distance from p1 to p3
+    let distance = p1.geodesic_distance(&p3);
+
+    // Calculate the interception point from p1 in the direction of p2 with the distance
+    let interception = p1.geodesic_destination(bearing, distance);
+    Waypoint::new(Geopoint::new(interception.x(), interception.y()))
+}
+
+/// Returns true if the point is on the segment or behind one of the endpoints of the segement
+/// with an allowed maximum distance, otherwise false.
+/// The parameter max is the maximum distance allowed to be considered as "near" in meter.<br/>
+/// ```text
+/// ---  line
+///  )   max
+///  +   point
+/// |-|  segment
+///
+/// |-------------|---+-----)--- => true
+/// |-------+-----|---------)--- => true
+/// |-------------|---------)-+- => false
+/// ```
+/// Example
+/// ```
+/// use gpx::Waypoint;
+/// use geo::Point;
+/// use gpx_split::loc::*;
+///
+/// let point = Waypoint::new(Point::new(0.0, 1.0));
+/// let segment = (&Waypoint::new(Point::new(0.0, 0.5)), &Waypoint::new(Point::new(0.0, 1.0)));
+/// assert!(is_near_segment(&point, segment, 0.1));
+/// ```
+pub fn is_near_segment(point: &Waypoint, segment: (&Waypoint, &Waypoint), max: f64) -> bool {
+    let dist_seg = distance(segment.0, segment.1);
+    let dist_start_point = distance(segment.0, point);
+    let dist_end_point = distance(segment.1, point);
+    let d = (dist_start_point + dist_end_point - dist_seg).abs();
+    d < max
 }
 
 #[cfg(test)]
 mod tests {
-    use geo_types::Point as GeoPoint;
-    use geo_types::{coord, Rect};
+
+    use geo_types::{coord, Rect, Point};
     use gpx::{Gpx, Metadata, Waypoint};
-    use haversine_rs::point::Point as HavPoint;
+    use approx_eq::assert_approx_eq;
 
-    use crate::geo::{distance, find_bounds, fit_bounds};
+    use super::*;
 
-    #[test]
-    fn test_distance() {
-        let point_0 = HavPoint::new(40.7767644, -73.9761399);
-        let point_1 = HavPoint::new(40.771209, -73.9673991);
-        let distance = distance(vec![point_0, point_1]);
-        assert!(distance == 960.9072987659282);
+    fn waypoint(x: f64, y: f64) -> Waypoint {
+        Waypoint::new(Point::new(x, y))
     }
 
     #[test]
-    fn test_fit_bounds() {
+    fn distance_2() {
+        let point_0 = waypoint(-73.9761399, 40.7767644);
+        let point_1 = waypoint(-73.9673991, 40.771209,);
+        let d = distance(&point_0, &point_1);
+        assert_approx_eq!(d, 961.8288);
+    }
+
+    #[test]
+    fn distance_array() {
+        let point_0 = waypoint(-73.9761399, 40.7767644);
+        let point_1 = waypoint(-73.9673991, 40.771209,);
+        let distance = distance_all(&[point_0, point_1]);
+        assert_approx_eq!(distance, 961.8288);
+    }
+
+    #[test]
+    fn no_waypoints_no_bounds() {
         let mut meta = Metadata::default();
         let rect = Rect::new(coord! { x: 10., y: 20. }, coord! { x: 30., y: 10. });
         meta.bounds = Some(rect);
@@ -103,14 +184,30 @@ mod tests {
     }
 
     #[test]
-    fn test_find_bounding_box() {
-        let point_0 = GeoPoint::new(40.7767644, -73.9761399);
-        let point_1 = GeoPoint::new(40.771209, -73.9673991);
-        let points = vec![Waypoint::new(point_0), Waypoint::new(point_1)];
+    fn find_bounding_box() {
+        let points = vec![waypoint(-73.9761399, 40.7767644), waypoint(-73.9673991, 40.771209)];
         let rect = find_bounds(&points).unwrap();
         assert_eq!(40.771209, rect.min().x);
         assert_eq!(-73.9761399, rect.min().y);
         assert_eq!(40.7767644, rect.max().x);
         assert_eq!(-73.9673991, rect.max().y);
+    }
+
+    #[test]
+    fn distance_to_line() {
+        //0.00028° = 0°0'1" ~ 30.9 m
+        let p = waypoint(0.0, 0.00028);
+        let ip = interception_point(&p, (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0)));
+        let dist_p_ip = distance(&p, &ip);
+        assert_approx_eq!(30.9607975, dist_p_ip);
+    }
+
+    #[test]
+    fn near_segment() {
+        let segment = (&waypoint(0.0, 0.5), &waypoint(0.0, 1.0));
+        assert!(is_near_segment(&waypoint(0.0, 0.5), segment, 0.1));
+        assert!(is_near_segment(&waypoint(0.0, 1.0), segment, 0.1));
+        assert!(is_near_segment(&waypoint(0.0, 1.00001), segment, 2.3));
+        assert!(!is_near_segment(&waypoint(0.0, 1.5), segment, 0.1));
     }
 }
