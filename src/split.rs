@@ -104,9 +104,7 @@ impl Splitter<Route> for RouteSplitter {
                 points.push(point.clone());
 
                 if self.limit.exceeds(&mut points) {
-                    let new_route = self.clone_route(route, &points);
-                    new_routes.push(new_route);
-
+                    new_routes.push(self.clone_route(route, &points));
                     //clear points, starting with last one
                     points = clear_points(&points);
                 }
@@ -116,9 +114,8 @@ impl Splitter<Route> for RouteSplitter {
         //this condition will be true in most cases
         //but it can happen that we split at the end of a route, in this case we have only one point
         if points.len() > 1 {
-            if let Some(last) = routes.last() {
-                let new_route = self.clone_route(last, &points);
-                new_routes.push(new_route);
+            if let Some(route) = routes.last() {
+                new_routes.push(self.clone_route(route, &points));
             }
         }
 
@@ -180,9 +177,7 @@ impl Splitter<Track> for TrackSplitter {
 
                     //create a new track when the points exceed a limit
                     if self.limit.exceeds(&mut points) {
-                        let new_track = self.clone_track(track, &points);
-                        new_tracks.push(new_track);
-
+                        new_tracks.push(self.clone_track(track, &points));
                         //clear points, starting with last one
                         points = clear_points(&points);
                     }
@@ -191,9 +186,8 @@ impl Splitter<Track> for TrackSplitter {
         //this condition will be true in most cases
         //but it can happen that we split at the end of a track, in this case we have only one point
         if points.len() > 1 {
-            if let Some(last) = tracks.last() {
-                let new_track = self.clone_track(last, &points);
-                new_tracks.push(new_track);
+            if let Some(track) = tracks.last() {
+                new_tracks.push(self.clone_track(track, &points));
             }
         }
 
