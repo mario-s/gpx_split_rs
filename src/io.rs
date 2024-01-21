@@ -6,8 +6,10 @@ use log::debug;
 use std::fs::File;
 use std::io::{BufReader, Error, ErrorKind};
 
+type Result<T> = std::result::Result<T, std::io::Error>;
+
 /// Reads Gpx data from the given path.
-pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
+pub fn read_gpx(path: &str) -> Result<Gpx> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
@@ -19,7 +21,7 @@ pub fn read_gpx(path: &str) -> Result<Gpx, Error> {
 
 /// Writes the Gpx into a new file pased on the given path
 /// while appending the counter to the filename.
-pub fn write_gpx(mut gpx: Gpx, path: &str, counter: usize) -> Result<(), Error> {
+pub fn write_gpx(mut gpx: Gpx, path: &str, counter: usize) -> Result<()> {
     gpx = update_metadata_name(gpx, counter);
     let path = create_path(path, counter)?;
     let file = File::create(&path)?;
@@ -47,7 +49,7 @@ pub fn append_index(name: Option<String>, index: usize) -> Option<String> {
 }
 
 /// creates a new path to a file
-fn create_path(path: &str, counter: usize) -> Result<String, Error> {
+fn create_path(path: &str, counter: usize) -> Result<String> {
     let parts: Vec<&str> = path.rsplitn(2, '.').collect();
     if parts.len() != 2 {
         return Err(Error::new(

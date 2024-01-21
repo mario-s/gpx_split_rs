@@ -1,12 +1,13 @@
 use gpx::{Gpx, Route, Track, TrackSegment, Waypoint};
 use log::debug;
-use std::io::Error;
 use std::thread;
 use std::thread::JoinHandle;
 
 use crate::geo::fit_bounds;
 use crate::io::*;
 use crate::limit::Limit;
+
+type Result<T> = std::result::Result<T, std::io::Error>;
 
 /// common context for splitters
 pub struct Context<T> {
@@ -30,7 +31,7 @@ impl<T> Context<T> {
     }
 
     /// Runs the context, which uses the [Splitter] to do the actual work.
-    pub fn run(&mut self) -> Result<usize, Error> {
+    pub fn run(&mut self) -> Result<usize> {
         let gpx = read_gpx(self.input_file.as_str())?;
         let origin = self.splitter.traces(gpx.clone());
         let len = origin.len();
@@ -42,7 +43,7 @@ impl<T> Context<T> {
         Ok(0)
     }
 
-    fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize, Error> {
+    fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize> {
         let mut handles = Vec::new();
         let path = self.output_file.clone().unwrap_or(self.input_file.clone());
 
@@ -74,7 +75,7 @@ pub trait Splitter<T> {
         gpx: &Gpx,
         trace: &T,
         counter: usize,
-    ) -> JoinHandle<Result<(), Error>>;
+    ) -> JoinHandle<Result<()>>;
 }
 
 /// Splitter for routes.
@@ -131,7 +132,7 @@ impl Splitter<Route> for RouteSplitter {
         gpx: &Gpx,
         route: &Route,
         index: usize,
-    ) -> JoinHandle<Result<(), Error>> {
+    ) -> JoinHandle<Result<()>> {
         let path = path.to_string();
         let gpx = gpx.clone();
         let mut route = route.clone();
@@ -206,7 +207,7 @@ impl Splitter<Track> for TrackSplitter {
         gpx: &Gpx,
         track: &Track,
         index: usize,
-    ) -> JoinHandle<Result<(), Error>> {
+    ) -> JoinHandle<Result<()>> {
         let path = path.to_string();
         let gpx = gpx.clone();
         let mut track = track.clone();
