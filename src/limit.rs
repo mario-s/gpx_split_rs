@@ -19,18 +19,22 @@ pub enum Limit {
 
 impl Limit {
     /// Creates a new limit of points.
+    #[must_use]
     pub fn points(max_points: u32) -> Self {
         debug!("maximum number of points: {}", max_points);
         Limit::Points(max_points)
     }
 
     /// Creates a new limit of length in meter.
+    #[must_use]
     pub fn length(max_length: u32) -> Self {
         debug!("maximum length between points: {}", max_length);
         Limit::Length(max_length)
     }
 
     /// Creates a new limit for a distance to locations.
+    #[allow(clippy::missing_panics_doc)]
+    #[must_use]
     pub fn location(waypoint_file: String, distance: u32) -> Self {
         trace!("reading waypoints for splitting at location from: {}", waypoint_file);
         //there is nothing much we can do here, just give up with a helpful error message
@@ -46,7 +50,7 @@ impl Limit {
     pub fn exceeds(&mut self, points: &mut [Waypoint]) -> bool {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
-            Limit::Length(max_length) => distance_all(points) > *max_length as f64,
+            Limit::Length(max_length) => distance_all(points) > f64::from(*max_length),
             Limit::Location(ref mut split_points, dist) => Limit::exceeds_location(*dist, split_points, points),
         }
     }
@@ -83,14 +87,15 @@ impl Limit {
     // If the distance is above the min_dist, the interception point is not considered.
     // The map is sorted, where the first entry is the shortest distance with the corresponding interception point.
     // The unit of the distance is milimeter.
+    #[allow(clippy::cast_possible_truncation)]
     fn interception_points(dist: u32, split_points: &mut [Waypoint], segment: (&Waypoint, &Waypoint)) -> BTreeMap<i64, (usize, Waypoint)> {
-        let min_dist = dist as f64;
+        let min_dist = f64::from(dist);
 
         split_points.iter().enumerate().filter_map(|(index, split_point)| {
             let mut ip = interception_point(split_point, segment);
             // The interception point can be far off from the segment.
             // So we consider only those which are within the distance.
-            if !is_near_segment(&ip, segment, dist as f64) {
+            if !is_near_segment(&ip, segment, f64::from(dist)) {
                 return None;
             }
             let dist = distance(split_point, &ip);
@@ -98,7 +103,7 @@ impl Limit {
                 debug!("interception point is near segment with a distance of {} meter", dist);
                 let dist = (dist * 1000.0) as i64;
                 if let Some(name) = &split_point.name {
-                    ip.name = Some(format!("nearby {}", name).to_string());
+                    ip.name = Some(format!("nearby {name}").to_string());
                 }
                 Some((dist, (index, ip)))
             } else {
@@ -135,7 +140,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "can't read file with splitting points: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }")]
     fn wrong_location() {
-        Limit::location("pois.gpx".to_string(), 10);
+        let _ = Limit::location("pois.gpx".to_string(), 10);
     }
 
     #[test]

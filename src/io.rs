@@ -15,7 +15,7 @@ pub fn read_gpx(path: &str) -> Result<Gpx> {
 
     match read(reader) {
         Ok(gpx) => Ok(gpx),
-        Err(gpx_err) => Err(to_error(gpx_err)),
+        Err(gpx_err) => Err(to_error(&gpx_err)),
     }
 }
 
@@ -27,11 +27,11 @@ pub fn write_gpx(mut gpx: Gpx, path: &str, counter: usize) -> Result<()> {
     let file = File::create(&path)?;
     let res = write(&gpx, file);
     match res {
-        Ok(_) => {
+        Ok(()) => {
             debug!("wrote file {}", path);
             Ok(())
         }
-        Err(gpx_err) => Err(to_error(gpx_err)),
+        Err(gpx_err) => Err(to_error(&gpx_err)),
     }
 }
 
@@ -45,7 +45,7 @@ fn update_metadata_name(mut gpx: Gpx, counter: usize) -> Gpx {
 
 /// Appends an integer to the end of the name.
 pub fn append_index(name: Option<String>, index: usize) -> Option<String> {
-    name.map(|n| format!("{} #{}", n, index))
+    name.map(|n| format!("{n} #{index}"))
 }
 
 /// creates a new path to a file
@@ -54,7 +54,7 @@ fn create_path(path: &str, counter: usize) -> Result<String> {
     if parts.len() != 2 {
         return Err(Error::new(
             ErrorKind::InvalidInput,
-            format!("invalid file: {}", path),
+            format!("invalid file: {path}"),
         ));
     }
     //new file name would be like foo_1.gpx
@@ -63,7 +63,7 @@ fn create_path(path: &str, counter: usize) -> Result<String> {
 }
 
 /// Function to convert an GpxError
-fn to_error(gpx_err: GpxError) -> Error {
+fn to_error(gpx_err: &GpxError) -> Error {
     Error::new(ErrorKind::InvalidData, gpx_err.to_string())
 }
 

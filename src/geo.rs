@@ -8,6 +8,7 @@ use geo::point;
 /// Calculates the distance between the 2 waypoints.
 /// Returns result in Meter.
 ///
+#[must_use]
 pub fn distance(p1: &Waypoint, p2: &Waypoint) -> f64 {
     let point = |p: &Waypoint| {point!(x: p.point().x(), y: p.point().y())};
     point(p1).geodesic_distance(&point(p2))
@@ -27,6 +28,7 @@ pub fn distance_all(points: &[Waypoint]) -> f64 {
 /// This will adjust the bounds of the metadata, if they are set.
 /// The new bounding box is a rectangle which contains min/max of x/y.
 ///
+#[must_use]
 pub fn fit_bounds(mut gpx: Gpx, way_points: &Vec<Waypoint>) -> Gpx {
     if let Some(existing) = gpx.metadata {
         let mut m = existing.clone();
@@ -40,6 +42,7 @@ pub fn fit_bounds(mut gpx: Gpx, way_points: &Vec<Waypoint>) -> Gpx {
 
 /// Find the bounding box, min x, min y, max x, max y from the given way points.
 ///
+#[must_use]
 fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
     if way_points.is_empty() {
         return None;
@@ -73,7 +76,7 @@ fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
 fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
     points
         .iter()
-        .map(|p| p.point())
+        .map(Waypoint::point)
         .map(|p| point!(x: p.x(), y: p.y()))
         .collect()
 }
@@ -91,6 +94,7 @@ fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
 /// assert_approx_eq!(0.4094528, ip.point().x());
 /// assert_approx_eq!(0.0, ip.point().y());
 /// ```
+#[must_use]
 pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint {
     let p1 = geodesic.0.point();
     let p1 = point!(x: p1.x(), y: p1.y());
@@ -133,6 +137,7 @@ pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) ->
 /// let segment = (&Waypoint::new(Point::new(0.0, 0.5)), &Waypoint::new(Point::new(0.0, 1.0)));
 /// assert!(is_near_segment(&point, segment, 0.1));
 /// ```
+#[must_use]
 pub fn is_near_segment(point: &Waypoint, segment: (&Waypoint, &Waypoint), max: f64) -> bool {
     let dist_seg = distance(segment.0, segment.1);
     let dist_start_point = distance(segment.0, point);

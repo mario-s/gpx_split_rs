@@ -52,7 +52,7 @@ fn track_location() {
 
 fn verify_track(pattern: &str, files: usize, min_points: usize) {
     for i in 0..files {
-        let p = pattern.to_owned() + &format!("_{}.gpx", i);
+        let p = pattern.to_owned() + &format!("_{i}.gpx");
         let gpx = read_gpx(&p).unwrap();
         let tracks = gpx.tracks;
         assert_eq!(1, tracks.len());
@@ -91,7 +91,7 @@ fn route_points() {
 
 fn verify_route(pattern: &str, files: usize, min_points: usize) {
     for i in 0..files {
-        let p = pattern.to_owned() + &format!("_{}.gpx", i);
+        let p = pattern.to_owned() + &format!("_{i}.gpx");
         let gpx = read_gpx(&p).unwrap();
         let tracks = gpx.routes;
         assert_eq!(1, tracks.len());

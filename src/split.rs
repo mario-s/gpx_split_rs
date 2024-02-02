@@ -4,7 +4,7 @@ use std::thread;
 use std::thread::JoinHandle;
 
 use crate::geo::fit_bounds;
-use crate::io::*;
+use crate::io::{append_index, read_gpx, write_gpx};
 use crate::limit::Limit;
 
 type Result<T> = std::result::Result<T, std::io::Error>;
@@ -18,6 +18,7 @@ pub struct Context<T> {
 
 impl<T> Context<T> {
     /// Constructs a new context.
+    #[must_use]
     pub fn new(
         input_file: String,
         output_file: Option<String>,
@@ -38,17 +39,17 @@ impl<T> Context<T> {
         let new_traces = self.splitter.split(&origin);
         if new_traces.len() > len {
             debug!("{} traces after splitting", new_traces.len());
-            return self.write(gpx, new_traces);
+            return self.write(&gpx, new_traces);
         }
         Ok(0)
     }
 
-    fn write(&self, gpx: Gpx, traces: Vec<T>) -> Result<usize> {
+    fn write(&self, gpx: &Gpx, traces: Vec<T>) -> Result<usize> {
         let mut handles = Vec::new();
         let path = self.output_file.clone().unwrap_or(self.input_file.clone());
 
         traces.iter().enumerate().for_each(|(index, trace)| {
-            let h = self.splitter.write(&path, &gpx, trace, index);
+            let h = self.splitter.write(&path, gpx, trace, index);
             handles.push(h);
         });
 
@@ -104,7 +105,7 @@ impl Splitter<Route> for RouteSplitter {
                 points.push(point.clone());
 
                 if self.limit.exceeds(&mut points) {
-                    new_routes.push(self.clone_route(route, &points));
+                    new_routes.push(RouteSplitter::clone_route(route, &points));
                     //clear points, starting with last one
                     points = clear_points(&points);
                 }
@@ -115,7 +116,7 @@ impl Splitter<Route> for RouteSplitter {
         //but it can happen that we split at the end of a route, in this case we have only one point
         if points.len() > 1 {
             if let Some(route) = routes.last() {
-                new_routes.push(self.clone_route(route, &points));
+                new_routes.push(RouteSplitter::clone_route(route, &points));
             }
         }
 
@@ -145,11 +146,12 @@ impl Splitter<Route> for RouteSplitter {
 
 impl RouteSplitter {
     ///Constructs a new [Splitter] for a [Route].
+    #[must_use]
     pub fn new(limit: Limit) -> Self {
         RouteSplitter { limit }
     }
 
-    fn clone_route(&self, src_route: &Route, points: &[Waypoint]) -> Route {
+    fn clone_route(src_route: &Route, points: &[Waypoint]) -> Route {
         let mut cloned_route = src_route.clone();
         cloned_route.points = points.to_vec();
         cloned_route
@@ -177,7 +179,7 @@ impl Splitter<Track> for TrackSplitter {
 
                     //create a new track when the points exceed a limit
                     if self.limit.exceeds(&mut points) {
-                        new_tracks.push(self.clone_track(track, &points));
+                        new_tracks.push(TrackSplitter::clone_track(track, &points));
                         //clear points, starting with last one
                         points = clear_points(&points);
                     }
@@ -187,7 +189,7 @@ impl Splitter<Track> for TrackSplitter {
         //but it can happen that we split at the end of a track, in this case we have only one point
         if points.len() > 1 {
             if let Some(track) = tracks.last() {
-                new_tracks.push(self.clone_track(track, &points));
+                new_tracks.push(TrackSplitter::clone_track(track, &points));
             }
         }
 
@@ -224,12 +226,13 @@ impl Splitter<Track> for TrackSplitter {
 
 impl TrackSplitter {
     /// Constructs a new [Splitter] for a [Track].
+    #[must_use]
     pub fn new(limit: Limit) -> Self {
         TrackSplitter { limit }
     }
 
     /// clone the source track and add new track segment with the points
-    fn clone_track(&self, src_track: &Track, points: &[Waypoint]) -> Track {
+    fn clone_track(src_track: &Track, points: &[Waypoint]) -> Track {
         let mut track_segment = TrackSegment::new();
         track_segment.points = points.to_vec();
 
@@ -292,7 +295,7 @@ mod tests {
         let mut route = Route::new();
         for i in 0..num_points {
             let mut point = Waypoint::default();
-            point.name = Some(format!("point {}", i));
+            point.name = Some(format!("point {i}"));
             route.points.push(point);
         }
         route
@@ -354,7 +357,7 @@ mod tests {
         let mut segment = TrackSegment::new();
         for i in 0..num_points {
             let mut point = Waypoint::default();
-            point.name = Some(format!("point {}", i));
+            point.name = Some(format!("point {i}"));
             segment.points.push(point);
         }
         let mut track = Track::new();
