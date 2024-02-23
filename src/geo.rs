@@ -29,7 +29,7 @@ pub fn distance_all(points: &[Waypoint]) -> f64 {
 /// The new bounding box is a rectangle which contains min/max of x/y.
 ///
 #[must_use]
-pub fn fit_bounds(mut gpx: Gpx, way_points: &Vec<Waypoint>) -> Gpx {
+pub fn fit_bounds(mut gpx: Gpx, way_points: &[Waypoint]) -> Gpx {
     if let Some(existing) = gpx.metadata {
         let mut m = existing.clone();
         if m.bounds.is_some() {
@@ -43,7 +43,7 @@ pub fn fit_bounds(mut gpx: Gpx, way_points: &Vec<Waypoint>) -> Gpx {
 /// Find the bounding box, min x, min y, max x, max y from the given way points.
 ///
 #[must_use]
-fn find_bounds(way_points: &Vec<Waypoint>) -> Option<Rect<f64>> {
+fn find_bounds(way_points: &[Waypoint]) -> Option<Rect<f64>> {
     if way_points.is_empty() {
         return None;
     }
@@ -184,7 +184,7 @@ mod tests {
         let gpx_ref = &mut gpx;
         gpx_ref.metadata = Some(meta);
 
-        let res = fit_bounds(gpx_ref.clone(), &vec![]);
+        let res = fit_bounds(gpx_ref.clone(), &[]);
         assert_eq!(None, res.metadata.and_then(|m| m.bounds))
     }
 

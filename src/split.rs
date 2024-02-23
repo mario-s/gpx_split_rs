@@ -45,7 +45,7 @@ impl<T> Context<T> {
     }
 
     fn write(&self, gpx: &Gpx, traces: Vec<T>) -> Result<usize> {
-        let mut handles = Vec::new();
+        let mut handles = Vec::with_capacity(traces.len());
         let path = self.output_file.clone().unwrap_or(self.input_file.clone());
 
         traces.iter().enumerate().for_each(|(index, trace)| {
