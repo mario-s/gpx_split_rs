@@ -66,7 +66,7 @@ fn main() {
     let limit = match by {
         By::Len => Limit::length(max),
         By::Point => Limit::points(max),
-        By::Loc => Limit::location(near.unwrap_or(path.clone()), max),
+        By::Loc => Limit::location(&near.unwrap_or(path.clone()), max),
     };
 
     let res = match trace {

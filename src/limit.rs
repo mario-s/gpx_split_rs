@@ -35,10 +35,10 @@ impl Limit {
     /// Creates a new limit for a distance to locations.
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
-    pub fn location(waypoint_file: String, distance: u32) -> Self {
+    pub fn location(waypoint_file: &str, distance: u32) -> Self {
         trace!("reading waypoints for splitting at location from: {}", waypoint_file);
         //there is nothing much we can do here, just give up with a helpful error message
-        let gpx = read_gpx(&waypoint_file).expect("can't read file with splitting points");
+        let gpx = read_gpx(waypoint_file).expect("can't read file with splitting points");
         debug!("minimum distance for location to split: {}", distance);
         let waypoints = gpx.waypoints;
         debug!("number of waypoints for splitting: {}", waypoints.len());
@@ -127,7 +127,7 @@ mod tests {
 
     #[test]
     fn location() {
-        let lim = Limit::location("target/debug/pois.gpx".to_string(), 10);
+        let lim = Limit::location("target/debug/pois.gpx", 10);
         match lim {
             Limit::Location(waypoints, dist) => {
                 assert_eq!(2, waypoints.len());
@@ -140,7 +140,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "can't read file with splitting points: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }")]
     fn wrong_location() {
-        let _ = Limit::location("pois.gpx".to_string(), 10);
+        let _ = Limit::location("pois.gpx", 10);
     }
 
     #[test]

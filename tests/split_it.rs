@@ -40,7 +40,7 @@ fn track_points() {
 #[test]
 fn track_location() {
     let path = "target/debug/track_loc.gpx".to_string();
-    let waypoints = "target/debug/pois.gpx".to_string();
+    let waypoints = "target/debug/pois.gpx";
     let splitter = Box::new(TrackSplitter::new(Limit::location(waypoints, 39)));
 
     let mut ctx = Context::new(path, None, splitter);
