@@ -252,6 +252,14 @@ mod tests {
     }
 
     #[test]
+    fn interception_equator() {
+        let p = waypoint(0.0, 1.0);
+        let ip = intercept(&p, (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0)));
+        assert_approx_eq!(0.0, ip.point().x(), 1.0e-3);
+        assert_approx_eq!(0.0, ip.point().y());
+    }
+
+    #[test]
     fn distance_to_line() {
         //0.00028° = 0°0'1" ~ 30.9 m
         let p = waypoint(0.0, 0.00028);
