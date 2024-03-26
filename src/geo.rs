@@ -1,17 +1,17 @@
-use geo_types::{coord, Rect};
-use geo_types::Point as Geopoint;
-use gpx::{Gpx, Waypoint};
+use geo::point;
 use geo::prelude::*;
 use geo::Point;
-use geo::point;
+use geo_types::Point as Geopoint;
+use geo_types::{coord, Rect};
 use geographiclib_rs::{DirectGeodesic, Geodesic, InverseGeodesic};
+use gpx::{Gpx, Waypoint};
 
 /// Calculates the distance between the 2 waypoints.
 /// Returns result in Meter.
 ///
 #[must_use]
 pub fn distance(p1: &Waypoint, p2: &Waypoint) -> f64 {
-    let point = |p: &Waypoint| {point!(x: p.point().x(), y: p.point().y())};
+    let point = |p: &Waypoint| point!(x: p.point().x(), y: p.point().y());
     point(p1).geodesic_distance(&point(p2))
 }
 
@@ -21,9 +21,10 @@ pub fn distance(p1: &Waypoint, p2: &Waypoint) -> f64 {
 pub fn distance_all(points: &[Waypoint]) -> f64 {
     let points = collect_points(points);
     points
-    .iter().zip(points.iter().skip(1))
-    .map(|(&p1, &p2)| p1.geodesic_distance(&p2))
-    .sum()
+        .iter()
+        .zip(points.iter().skip(1))
+        .map(|(&p1, &p2)| p1.geodesic_distance(&p2))
+        .sum()
 }
 
 /// This will adjust the bounds of the metadata, if they are set.
@@ -50,18 +51,12 @@ fn find_bounds(way_points: &[Waypoint]) -> Option<Rect<f64>> {
     }
 
     let points = collect_points(way_points);
-    let min_x = points
-        .iter()
-        .map(|p| p.y())
-        .fold(f64::INFINITY, f64::min);
+    let min_x = points.iter().map(|p| p.y()).fold(f64::INFINITY, f64::min);
     let max_x = points
         .iter()
         .map(|p| p.y())
         .fold(f64::NEG_INFINITY, f64::max);
-    let min_y = points
-        .iter()
-        .map(|p| p.x())
-        .fold(f64::INFINITY, f64::min);
+    let min_y = points.iter().map(|p| p.x()).fold(f64::INFINITY, f64::min);
     let max_y = points
         .iter()
         .map(|p| p.x())
@@ -99,22 +94,27 @@ fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
 pub fn intercept(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint {
     let geod = Geodesic::wgs84();
     let radius: f64 = geod.a;
+
+    let point_n = (point.point().x(), point.point().y());
     let mut point_a = (geodesic.0.point().x(), geodesic.0.point().y());
     let point_b = (geodesic.1.point().x(), geodesic.1.point().y());
-    let point_n = (point.point().x(), point.point().y());
 
     loop {
-        let ap: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_n.0, point_n.1);
-        let ab: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_b.0, point_b.1);
+        let a_n: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_n.0, point_n.1);
+        let a_b: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_b.0, point_b.1);
         //distance p_a to p_n
-        let dist_ap = ap.0;
+        let dist_ap = a_n.0;
         //azimuth
-        let azi: f64 = ap.1 - ab.1;
+        let azi: f64 = a_n.1 - a_b.1;
 
-        let s_px: f64 = radius * ( (dist_ap / radius).sin() * azi.to_radians().sin() ).asin();
-        let s_ax: f64 = 2.0 * radius * ( ((90.0 + azi) / 2.0).to_radians().sin() / ((90.0 - azi) / 2.0).to_radians().sin() * ((dist_ap - s_px)/(2.0 * radius)).tan()).atan();
+        let s_px: f64 = radius * ((dist_ap / radius).sin() * azi.to_radians().sin()).asin();
+        let s_ax: f64 = 2.0
+            * radius
+            * (((90.0 + azi) / 2.0).to_radians().sin() / ((90.0 - azi) / 2.0).to_radians().sin()
+                * ((dist_ap - s_px) / (2.0 * radius)).tan())
+            .atan();
 
-        let p_a2: (f64, f64, f64, f64) = geod.direct(point_a.0, point_a.1, ab.1, s_ax);
+        let p_a2: (f64, f64, f64, f64) = geod.direct(point_a.0, point_a.1, a_b.1, s_ax);
 
         if s_ax.abs() < 1e-2 {
             break;
@@ -160,9 +160,9 @@ pub fn is_near_segment(point: &Waypoint, segment: (&Waypoint, &Waypoint), max: f
 #[cfg(test)]
 mod tests {
 
-    use geo_types::{coord, Rect, Point};
-    use gpx::{Gpx, Metadata, Waypoint};
     use approx_eq::assert_approx_eq;
+    use geo_types::{coord, Point, Rect};
+    use gpx::{Gpx, Metadata, Waypoint};
 
     use super::*;
 
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn distance_2() {
         let point_0 = waypoint(-73.9761399, 40.7767644);
-        let point_1 = waypoint(-73.9673991, 40.771209,);
+        let point_1 = waypoint(-73.9673991, 40.771209);
         let d = distance(&point_0, &point_1);
         assert_approx_eq!(d, 961.8288);
     }
@@ -181,7 +181,7 @@ mod tests {
     #[test]
     fn distance_array() {
         let point_0 = waypoint(-73.9761399, 40.7767644);
-        let point_1 = waypoint(-73.9673991, 40.771209,);
+        let point_1 = waypoint(-73.9673991, 40.771209);
         let distance = distance_all(&[point_0, point_1]);
         assert_approx_eq!(distance, 961.8288);
     }
@@ -201,7 +201,10 @@ mod tests {
 
     #[test]
     fn find_bounding_box() {
-        let points = vec![waypoint(-73.9761399, 40.7767644), waypoint(-73.9673991, 40.771209)];
+        let points = vec![
+            waypoint(-73.9761399, 40.7767644),
+            waypoint(-73.9673991, 40.771209),
+        ];
         let rect = find_bounds(&points).unwrap();
         assert_eq!(40.771209, rect.min().x);
         assert_eq!(-73.9761399, rect.min().y);
@@ -212,7 +215,10 @@ mod tests {
     #[test]
     fn interception() {
         let p = waypoint(52.5186118, 13.408056);
-        let ip = intercept(&p, (&waypoint(64.15, -21.933333), &waypoint(55.75, 37.616667)));
+        let ip = intercept(
+            &p,
+            (&waypoint(64.15, -21.933333), &waypoint(55.75, 37.616667)),
+        );
         assert_approx_eq!(61.6561898, ip.point().x());
         assert_approx_eq!(20.543903, ip.point().y());
     }

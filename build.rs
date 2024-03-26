@@ -1,5 +1,5 @@
-use std::env;
 use copy_to_output::copy_to_output;
+use std::env;
 
 fn main() {
     const KEY: &str = "PROFILE";

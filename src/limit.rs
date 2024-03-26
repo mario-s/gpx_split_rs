@@ -1,11 +1,10 @@
-use std::collections::BTreeMap;
 use gpx::Waypoint;
 use log::debug;
 use log::trace;
+use std::collections::BTreeMap;
 
-use crate::io::read_gpx;
 use crate::geo::{distance, distance_all, intercept, is_near_segment};
-
+use crate::io::read_gpx;
 
 /// Checks if the points exceed a defined limit.
 pub enum Limit {
@@ -36,7 +35,10 @@ impl Limit {
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn location(waypoint_file: &str, distance: u32) -> Self {
-        trace!("reading waypoints for splitting at location from: {}", waypoint_file);
+        trace!(
+            "reading waypoints for splitting at location from: {}",
+            waypoint_file
+        );
         //there is nothing much we can do here, just give up with a helpful error message
         let gpx = read_gpx(waypoint_file).expect("can't read file with splitting points");
         debug!("minimum distance for location to split: {}", distance);
@@ -51,11 +53,17 @@ impl Limit {
         match self {
             Limit::Points(max_points) => points.len() >= *max_points as usize,
             Limit::Length(max_length) => distance_all(points) > f64::from(*max_length),
-            Limit::Location(ref mut split_points, dist) => Limit::exceeds_location(*dist, split_points, points),
+            Limit::Location(ref mut split_points, dist) => {
+                Limit::exceeds_location(*dist, split_points, points)
+            }
         }
     }
 
-    fn exceeds_location(dist: u32, split_points: &mut Vec<Waypoint>, points: &mut [Waypoint]) -> bool {
+    fn exceeds_location(
+        dist: u32,
+        split_points: &mut Vec<Waypoint>,
+        points: &mut [Waypoint],
+    ) -> bool {
         let len = points.len();
         // early return when there are no splitting points or we don't have a line yet
         if split_points.is_empty() || len < 2 {
@@ -72,14 +80,14 @@ impl Limit {
                 //Each split point can be used only once. When we add an interception point,
                 //we will also remove the splitting point. The consequences of keeping the splitting point
                 //would be weird tracks, containing just a few points till the next interception point.
-                let index = entry.1.0;
+                let index = entry.1 .0;
                 split_points.remove(index);
                 //finally the interception point
-                let point = entry.1.1;
-                points[len-1] = point;
+                let point = entry.1 .1;
+                points[len - 1] = point;
                 true
-            },
-            None => false
+            }
+            None => false,
         }
     }
 
@@ -88,31 +96,41 @@ impl Limit {
     // The map is sorted, where the first entry is the shortest distance with the corresponding interception point.
     // The unit of the distance is milimeter.
     #[allow(clippy::cast_possible_truncation)]
-    fn interception_points(dist: u32, split_points: &mut [Waypoint], segment: (&Waypoint, &Waypoint)) -> BTreeMap<i64, (usize, Waypoint)> {
+    fn interception_points(
+        dist: u32,
+        split_points: &mut [Waypoint],
+        segment: (&Waypoint, &Waypoint),
+    ) -> BTreeMap<i64, (usize, Waypoint)> {
         let min_dist = f64::from(dist);
 
-        split_points.iter().enumerate().filter_map(|(index, split_point)| {
-            let mut ip = intercept(split_point, segment);
-            // The interception point can be far off from the segment.
-            // So we consider only those which are within the distance.
-            if !is_near_segment(&ip, segment, f64::from(dist)) {
-                return None;
-            }
-            let dist = distance(split_point, &ip);
-            if dist < min_dist {
-                debug!("interception point is near segment with a distance of {} meter", dist);
-                let dist = (dist * 1000.0) as i64;
-                if let Some(name) = &split_point.name {
-                    ip.name = Some(format!("nearby {name}").to_string());
+        split_points
+            .iter()
+            .enumerate()
+            .filter_map(|(index, split_point)| {
+                let mut ip = intercept(split_point, segment);
+                // The interception point can be far off from the segment.
+                // So we consider only those which are within the distance.
+                if !is_near_segment(&ip, segment, f64::from(dist)) {
+                    return None;
                 }
-                Some((dist, (index, ip)))
-            } else {
-                None
-            }
-        }).collect::<BTreeMap<_, _>>()
+                let dist = distance(split_point, &ip);
+                if dist < min_dist {
+                    debug!(
+                        "interception point is near segment with a distance of {} meter",
+                        dist
+                    );
+                    let dist = (dist * 1000.0) as i64;
+                    if let Some(name) = &split_point.name {
+                        ip.name = Some(format!("nearby {name}").to_string());
+                    }
+                    Some((dist, (index, ip)))
+                } else {
+                    None
+                }
+            })
+            .collect::<BTreeMap<_, _>>()
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -132,13 +150,15 @@ mod tests {
             Limit::Location(waypoints, dist) => {
                 assert_eq!(2, waypoints.len());
                 assert_eq!(10, dist)
-            },
-            _ => panic!("unexpected result")
+            }
+            _ => panic!("unexpected result"),
         }
     }
 
     #[test]
-    #[should_panic(expected = "can't read file with splitting points: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }")]
+    #[should_panic(
+        expected = "can't read file with splitting points: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }"
+    )]
     fn wrong_location() {
         let _ = Limit::location("pois.gpx", 10);
     }
@@ -153,9 +173,15 @@ mod tests {
 
     #[test]
     fn exceeds_location_true() {
-        let split_points = Box::new(vec![waypoint(13.535369, 52.643826), waypoint(13.535368, 52.643825)]);
+        let split_points = Box::new(vec![
+            waypoint(13.535369, 52.643826),
+            waypoint(13.535368, 52.643825),
+        ]);
         let mut lim = Limit::Location(split_points, 15);
-        let points = &mut [waypoint(13.533826, 52.643605), waypoint(13.535629, 52.644021)];
+        let points = &mut [
+            waypoint(13.533826, 52.643605),
+            waypoint(13.535629, 52.644021),
+        ];
         assert!(lim.exceeds(points));
     }
 
@@ -174,15 +200,19 @@ mod tests {
         let line = (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0));
         let mut wp = waypoint(0.0, 0.2);
         wp.name = Some("Point".to_string());
-        let mut split_points = Box::new(vec![waypoint(-0.5, 1.5), waypoint(-0.1, 0.4),
-            wp, waypoint(0.5, 0.3)]);
+        let mut split_points = Box::new(vec![
+            waypoint(-0.5, 1.5),
+            waypoint(-0.1, 0.4),
+            wp,
+            waypoint(0.5, 0.3),
+        ]);
 
         let mut ips = Limit::interception_points(dist, &mut split_points, line);
 
         assert_eq!(2, ips.len());
         let first = ips.pop_first();
         let first = first.unwrap_or((0, (0, Waypoint::default())));
-        let point = first.1.1;
+        let point = first.1 .1;
         let first = first.0;
         let second = ips.pop_first();
         let second = second.unwrap_or((0, (0, Waypoint::default()))).0;

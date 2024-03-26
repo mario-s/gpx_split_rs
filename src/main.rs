@@ -72,12 +72,17 @@ fn main() {
     let res = match trace {
         Trace::Route => run(&path, out, Box::new(RouteSplitter::new(limit))),
         Trace::Track => run(&path, out, Box::new(TrackSplitter::new(limit))),
-    }.unwrap_or_else(|err| {
+    }
+    .unwrap_or_else(|err| {
         eprintln!("Problem processing GPX file: {err}");
         process::exit(1);
     });
 
-    debug!("Splitting source into {} files took {} microseconds.", res, now.elapsed().as_micros());
+    debug!(
+        "Splitting source into {} files took {} microseconds.",
+        res,
+        now.elapsed().as_micros()
+    );
 }
 
 fn run<T: 'static>(
