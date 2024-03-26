@@ -93,6 +93,7 @@ fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
 /// ```
 pub fn intercept(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint {
     let geod = Geodesic::wgs84();
+    //equatorial radius
     let radius: f64 = geod.a;
 
     let point_n = (point.point().x(), point.point().y());
@@ -213,7 +214,8 @@ mod tests {
     }
 
     #[test]
-    fn interception() {
+    //test for a point that is within the boundaries defined by start and end
+    fn interception_inside() {
         let p = waypoint(52.5186118, 13.408056);
         let ip = intercept(
             &p,
@@ -224,10 +226,11 @@ mod tests {
     }
 
     #[test]
-    fn interception_equator() {
-        let p = waypoint(0.0, 1.0);
+    //test for a point that is outside the boundaries defined by start and end
+    fn interception_outside() {
+        let p = waypoint(4.0, 2.0);
         let ip = intercept(&p, (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0)));
-        assert_approx_eq!(0.0, ip.point().x(), 1.0e-3);
+        assert_approx_eq!(4.0, ip.point().x(), 1.0e-3);
         assert_approx_eq!(0.0, ip.point().y());
     }
 
