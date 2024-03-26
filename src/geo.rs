@@ -82,39 +82,6 @@ fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
         .collect()
 }
 
-/// A straight line between two points, on the earth surface is a geodesic.
-/// The closest point on a geodesic to another point, is referred to as the interception point.
-/// ```
-/// use gpx::Waypoint;
-/// use geo::Point;
-/// use gpx_split::loc::*;
-/// use approx_eq::assert_approx_eq;
-///
-/// let p = Waypoint::new(Point::new(0.0, 1.0));
-/// let ip = interception_point(&p, (&Waypoint::new(Point::new(-1.0, 0.0)), &Waypoint::new(Point::new(1.0, 0.0))));
-/// assert_approx_eq!(0.4094528, ip.point().x());
-/// assert_approx_eq!(0.0, ip.point().y());
-/// ```
-#[must_use]
-pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint {
-    let p1 = geodesic.0.point();
-    let p1 = point!(x: p1.x(), y: p1.y());
-    let p2 = geodesic.1.point();
-    let p2 = point!(x: p2.x(), y: p2.y());
-    let p3 = point.point();
-    let p3 = point!(x: p3.x(), y: p3.y());
-
-    // Calculate bearing from p1 to p2
-    let bearing = p1.geodesic_bearing(p2);
-
-    // Calculate geodesic distance from p1 to p3
-    let distance = p1.geodesic_distance(&p3);
-
-    // Calculate the interception point from p1 in the direction of p2 with the distance
-    let interception = p1.geodesic_destination(bearing, distance);
-    Waypoint::new(Geopoint::new(interception.x(), interception.y()))
-}
-
 /// A straight line between two points on the earth's surface is a geodesic.
 /// This function calculates the interception point, which is the closest point on a geodesic to another point.
 ///
@@ -126,7 +93,6 @@ pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) ->
 ///
 /// let p = Waypoint::new(Point::new(52.5186118, 13.408056));
 /// let ip = intercept(&p, (&Waypoint::new(Point::new(64.15, -21.933333)), &Waypoint::new(Point::new(55.75, 37.616667))));
-/// println!("{:?}", ip);
 /// assert_approx_eq!(61.6561898, ip.point().x());
 /// assert_approx_eq!(20.543903, ip.point().y());
 /// ```
@@ -263,7 +229,7 @@ mod tests {
     fn distance_to_line() {
         //0.00028° = 0°0'1" ~ 30.9 m
         let p = waypoint(0.0, 0.00028);
-        let ip = interception_point(&p, (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0)));
+        let ip = intercept(&p, (&waypoint(-1.0, 0.0), &waypoint(1.0, 0.0)));
         let dist_p_ip = distance(&p, &ip);
         assert_approx_eq!(30.9607975, dist_p_ip);
     }

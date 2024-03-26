@@ -4,7 +4,7 @@ use log::debug;
 use log::trace;
 
 use crate::io::read_gpx;
-use crate::geo::{distance, distance_all, interception_point, is_near_segment};
+use crate::geo::{distance, distance_all, intercept, is_near_segment};
 
 
 /// Checks if the points exceed a defined limit.
@@ -92,7 +92,7 @@ impl Limit {
         let min_dist = f64::from(dist);
 
         split_points.iter().enumerate().filter_map(|(index, split_point)| {
-            let mut ip = interception_point(split_point, segment);
+            let mut ip = intercept(split_point, segment);
             // The interception point can be far off from the segment.
             // So we consider only those which are within the distance.
             if !is_near_segment(&ip, segment, f64::from(dist)) {
