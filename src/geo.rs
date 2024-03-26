@@ -4,6 +4,7 @@ use gpx::{Gpx, Waypoint};
 use geo::prelude::*;
 use geo::Point;
 use geo::point;
+use geographiclib_rs::{DirectGeodesic, Geodesic, InverseGeodesic};
 
 /// Calculates the distance between the 2 waypoints.
 /// Returns result in Meter.
@@ -114,6 +115,50 @@ pub fn interception_point(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) ->
     Waypoint::new(Geopoint::new(interception.x(), interception.y()))
 }
 
+/// A straight line between two points on the earth's surface is a geodesic.
+/// This function calculates the interception point, which is the closest point on a geodesic to another point.
+///
+/// ```
+/// use gpx::Waypoint;
+/// use geo::Point;
+/// use gpx_split::loc::*;
+/// use approx_eq::assert_approx_eq;
+///
+/// let p = Waypoint::new(Point::new(52.5186118, 13.408056));
+/// let ip = intercept(&p, (&Waypoint::new(Point::new(64.15, -21.933333)), &Waypoint::new(Point::new(55.75, 37.616667))));
+/// println!("{:?}", ip);
+/// assert_approx_eq!(61.6561898, ip.point().x());
+/// assert_approx_eq!(20.543903, ip.point().y());
+/// ```
+pub fn intercept(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint {
+    let geod = Geodesic::wgs84();
+    let radius: f64 = geod.a;
+    let mut point_a = (geodesic.0.point().x(), geodesic.0.point().y());
+    let point_b = (geodesic.1.point().x(), geodesic.1.point().y());
+    let point_n = (point.point().x(), point.point().y());
+
+    loop {
+        let ap: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_n.0, point_n.1);
+        let ab: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_b.0, point_b.1);
+        //distance p_a to p_n
+        let dist_ap = ap.0;
+        //azimuth
+        let azi: f64 = ap.1 - ab.1;
+
+        let s_px: f64 = radius * ( (dist_ap / radius).sin() * azi.to_radians().sin() ).asin();
+        let s_ax: f64 = 2.0 * radius * ( ((90.0 + azi) / 2.0).to_radians().sin() / ((90.0 - azi) / 2.0).to_radians().sin() * ((dist_ap - s_px)/(2.0 * radius)).tan()).atan();
+
+        let p_a2: (f64, f64, f64, f64) = geod.direct(point_a.0, point_a.1, ab.1, s_ax);
+
+        if s_ax.abs() < 1e-2 {
+            break;
+        }
+
+        point_a = (p_a2.0, p_a2.1);
+    }
+    Waypoint::new(Geopoint::new(point_a.0, point_a.1))
+}
+
 /// Returns true if the point is on the segment or behind one of the endpoints of the segement
 /// with an allowed maximum distance, otherwise false.
 /// The parameter max is the maximum distance allowed to be considered as "near" in meter.<br/>
@@ -196,6 +241,14 @@ mod tests {
         assert_eq!(-73.9761399, rect.min().y);
         assert_eq!(40.7767644, rect.max().x);
         assert_eq!(-73.9673991, rect.max().y);
+    }
+
+    #[test]
+    fn interception() {
+        let p = waypoint(52.5186118, 13.408056);
+        let ip = intercept(&p, (&waypoint(64.15, -21.933333), &waypoint(55.75, 37.616667)));
+        assert_approx_eq!(61.6561898, ip.point().x());
+        assert_approx_eq!(20.543903, ip.point().y());
     }
 
     #[test]
