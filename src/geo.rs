@@ -79,6 +79,7 @@ fn collect_points(points: &[Waypoint]) -> Vec<Point<f64>> {
 
 /// A straight line between two points on the earth's surface is a geodesic.
 /// This function calculates the interception point, which is the closest point on a geodesic to another point.
+/// For more information see <https://www.researchgate.net/publication/321358300_Intersection_and_point-to-line_solutions_for_geodesics_on_the_ellipsoid>
 ///
 /// ```
 /// use gpx::Waypoint;
@@ -96,19 +97,20 @@ pub fn intercept(point: &Waypoint, geodesic: (&Waypoint, &Waypoint)) -> Waypoint
     //equatorial radius
     let radius: f64 = geod.a;
 
-    let point_n = (point.point().x(), point.point().y());
+    let point_c = (point.point().x(), point.point().y());
     let mut point_a = (geodesic.0.point().x(), geodesic.0.point().y());
     let point_b = (geodesic.1.point().x(), geodesic.1.point().y());
 
     loop {
-        let a_n: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_n.0, point_n.1);
+        let a_c: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_c.0, point_c.1);
         let a_b: (f64, f64, f64, f64) = geod.inverse(point_a.0, point_a.1, point_b.0, point_b.1);
-        //distance p_a to p_n
-        let dist_ap = a_n.0;
+        //distance p_a to p_c
+        let dist_ap = a_c.0;
         //azimuth
-        let azi: f64 = a_n.1 - a_b.1;
+        let azi: f64 = a_c.1 - a_b.1;
 
         let s_px: f64 = radius * ((dist_ap / radius).sin() * azi.to_radians().sin()).asin();
+        //distance along the geodesic path from A to X
         let s_ax: f64 = 2.0
             * radius
             * (((90.0 + azi) / 2.0).to_radians().sin() / ((90.0 - azi) / 2.0).to_radians().sin()
