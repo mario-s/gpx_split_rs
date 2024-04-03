@@ -1,6 +1,6 @@
-use gpx_split::split::{Context, TrackSplitter, RouteSplitter};
-use gpx_split::limit::Limit;
 use gpx_split::io::read_gpx;
+use gpx_split::limit::Limit;
+use gpx_split::split::{Context, RouteSplitter, TrackSplitter};
 
 #[test]
 fn track_length_too_long() {

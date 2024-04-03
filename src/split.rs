@@ -70,13 +70,7 @@ pub trait Splitter<T> {
     /// Split the origin into new vector.
     fn split(&mut self, origin: &[T]) -> Vec<T>;
     /// Write one new trace into a file.
-    fn write(
-        &self,
-        path: &str,
-        gpx: &Gpx,
-        trace: &T,
-        counter: usize,
-    ) -> JoinHandle<Result<()>>;
+    fn write(&self, path: &str, gpx: &Gpx, trace: &T, counter: usize) -> JoinHandle<Result<()>>;
 }
 
 /// Splitter for routes.
@@ -124,13 +118,7 @@ impl Splitter<Route> for RouteSplitter {
     }
 
     /// Writes the given route into a new file.
-    fn write(
-        &self,
-        path: &str,
-        gpx: &Gpx,
-        route: &Route,
-        index: usize,
-    ) -> JoinHandle<Result<()>> {
+    fn write(&self, path: &str, gpx: &Gpx, route: &Route, index: usize) -> JoinHandle<Result<()>> {
         let path = path.to_string();
         let gpx = gpx.clone();
         let mut route = route.clone();
@@ -197,13 +185,7 @@ impl Splitter<Track> for TrackSplitter {
     }
 
     /// Writes the given track into a new file.
-    fn write(
-        &self,
-        path: &str,
-        gpx: &Gpx,
-        track: &Track,
-        index: usize,
-    ) -> JoinHandle<Result<()>> {
+    fn write(&self, path: &str, gpx: &Gpx, track: &Track, index: usize) -> JoinHandle<Result<()>> {
         let path = path.to_string();
         let gpx = gpx.clone();
         let mut track = track.clone();
@@ -245,7 +227,7 @@ impl TrackSplitter {
 //--------------------------------------------------------------
 
 // clear the points and add the previous last one as the first
-fn clear_points(points: &[Waypoint]) ->  Vec<Waypoint>{
+fn clear_points(points: &[Waypoint]) -> Vec<Waypoint> {
     if let Some(last) = points.last() {
         return vec![last.clone()];
     }
@@ -256,8 +238,8 @@ fn clear_points(points: &[Waypoint]) ->  Vec<Waypoint>{
 
 #[cfg(test)]
 mod tests {
-    use crate::limit::Limit;
     use super::*;
+    use crate::limit::Limit;
     use gpx::{Route, Track, TrackSegment, Waypoint};
 
     #[test]
