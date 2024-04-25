@@ -8,11 +8,11 @@ use crate::io::read_gpx;
 
 /// Checks if the points exceed a defined limit.
 pub enum Limit {
-    /// strategy to check limit based on the number of points
+    /// A strategy to check limit based on the number of points.
     Points(u32),
-    /// strategy to check limit based on the length in meter of the sum of the distances between the points
+    /// A strategy to check limit based on the length in meter of the sum of the distances between the points.
     Length(u32),
-    /// strategy to check limit based on the distance in meter to the nearest location
+    /// A strategy to check limit based on the distance in meter to the nearest location.
     Location(Box<Vec<Waypoint>>, u32),
 }
 

@@ -9,7 +9,7 @@ use crate::limit::Limit;
 
 type Result<T> = std::result::Result<T, std::io::Error>;
 
-/// common context for splitters
+/// This struct is the common context for splitters.
 pub struct Context<T> {
     input_file: String,
     output_file: Option<String>,
@@ -63,22 +63,22 @@ impl<T> Context<T> {
 
 //--------------------------------------------------------------
 
-/// Trait which splits a route or track.
+/// This trait splits a route or track.
 pub trait Splitter<T> {
     /// Returns the trace to split.
     fn traces(&self, gpx: Gpx) -> Vec<T>;
-    /// Split the origin into new vector.
+    /// Split the origin into a vector.
     fn split(&mut self, origin: &[T]) -> Vec<T>;
     /// Write one new trace into a file.
     fn write(&self, path: &str, gpx: &Gpx, trace: &T, counter: usize) -> JoinHandle<Result<()>>;
 }
 
-/// Splitter for routes.
+/// The splitter for routes.
 pub struct RouteSplitter {
     limit: Limit,
 }
 
-/// Splitter for tracks.
+/// The splitter for tracks.
 pub struct TrackSplitter {
     limit: Limit,
 }
@@ -90,7 +90,8 @@ impl Splitter<Route> for RouteSplitter {
         gpx.routes
     }
 
-    /// splits the given routes into new routes where the number of points of that route are limited
+    /// This method splits the given tracks into new tracks.
+    /// The limit where to split is defined by [Limit].
     fn split(&mut self, routes: &[Route]) -> Vec<Route> {
         let mut new_routes = Vec::new();
         let mut points = Vec::new();
@@ -153,7 +154,8 @@ impl Splitter<Track> for TrackSplitter {
         gpx.tracks
     }
 
-    /// splits the given tracks into new tracks where the number of points of that tracks are limited
+    /// This method splits the given tracks into new tracks.
+    /// The limit where to split is defined by [Limit].
     fn split(&mut self, tracks: &[Track]) -> Vec<Track> {
         let mut new_tracks = Vec::new();
         let mut points = Vec::new();

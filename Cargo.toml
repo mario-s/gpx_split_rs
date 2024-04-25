@@ -1,11 +1,12 @@
 [package]
 name = "gpx_split"
-license = "Apache-2.0"
+description = "Splitter for a route or track in a GPX file."
 version = "0.1.0"
+keywords = ["gpx", "geo"]
 edition = "2021"
+license = "Apache-2.0"
 authors = ["Mario Schroeder <spindizzy@outlook.com>"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+repository = "https://github.com/mario-s/gpx_split_rs"
 
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
