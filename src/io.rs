@@ -19,8 +19,8 @@ pub fn read_gpx(path: &str) -> Result<Gpx> {
     }
 }
 
-/// Writes the Gpx into a new file pased on the given path
-/// while appending the counter to the filename.
+/// Writes the Gpx into a new file, based on the given path,
+/// and appends the counter to the filename.
 pub fn write_gpx(mut gpx: Gpx, path: &str, counter: usize) -> Result<()> {
     gpx = update_metadata_name(gpx, counter);
     let path = create_path(path, counter)?;
@@ -43,12 +43,12 @@ fn update_metadata_name(mut gpx: Gpx, counter: usize) -> Gpx {
     gpx
 }
 
-/// Appends an integer to the end of the name.
+/// Appends the index at the end of the name.
 pub fn append_index(name: Option<String>, index: usize) -> Option<String> {
     name.map(|n| format!("{n} #{index}"))
 }
 
-/// creates a new path to a file
+/// creates a new file path
 fn create_path(path: &str, counter: usize) -> Result<String> {
     let parts: Vec<&str> = path.rsplitn(2, '.').collect();
     if parts.len() != 2 {
